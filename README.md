@@ -17,7 +17,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Run the program, it will automatically prompt you to create the necessary files it needs. (It's best to put the .py file into its own folder)
   * The program will prompt you to input a API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
     * How to find your user ID:
-      * Open the steam desktop app.
+      * Open steam dekstop app, website or mobile app.
       * Click on your profile picture in the top right.
       * Click account details.
       * At the top left of the page, under the (usernames)'s account text, your user ID will be shown there.
