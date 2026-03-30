@@ -20,19 +20,19 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
    * Clone the repository
    * Install dependencies with pip install -r ~/path/to/requirements.txt 
    * Run the program, it will automatically prompt you to create the necessary files it needs. (It's best to put the .py file into its own folder)
-    * The program will prompt you to input a API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
-    * How to find your user ID:
-      * Open steam dekstop app, website or mobile app.
-      * Click on your profile picture in the top right.
-      * Click account details.
-      * At the top left of the page, under the (usernames)'s account text, your user ID will be shown there.
-    * How to set up an API key:
-      * Read the [steam api terms](https://steamcommunity.com/dev/apiterms) if you wish.
-      * Go to [the api key registration page](https://steamcommunity.com/dev/apikey), and make sure you're logged in.
-      * For this application, put in 'localhost' into the field.
-      * Agree to the terms and press register.
-      * Copy the key. Keep this key private.
-     When you have those credientials, paste them into the program when it asks, (the normal paste command is Ctrl+Shift+V sometimes)
+     * The program will prompt you to input a API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
+     * How to find your user ID:
+        * Open steam dekstop app, website or mobile app.
+        * Click on your profile picture in the top right.
+        * Click account details.
+        * At the top left of the page, under the (usernames)'s account text, your user ID will be shown there.
+     * How to set up an API key:
+        * Read the [steam api terms](https://steamcommunity.com/dev/apiterms) if you wish.
+        * Go to [the api key registration page](https://steamcommunity.com/dev/apikey), and make sure you're logged in.
+        * For this application, put in 'localhost' into the field.
+        * Agree to the terms and press register.
+        * Copy the key. Keep this key private.
+     When you have those credientials, paste them into the program when it asks.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
   * Once that has been completed, the program should be ready to run! Follow the onscren prompts when using it.
   * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while to get every game's image cached until rerolls go through your games fast.
