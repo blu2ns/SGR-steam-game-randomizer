@@ -20,7 +20,11 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
       * Click account details
       * At the top left of the page, under the (usernames)'s account text, your user ID will be shown there.
     * How to set up an API key:
-      * https://steamcommunity.com/dev/apikey
+      * Read the steam api terms [https://steamcommunity.com/dev](https://steamcommunity.com/dev/apiterms) if you wish.
+      * Go to https://steamcommunity.com/dev/apikey, make sure you're logged in
+      * For this application, put in 'localhost' into the field.
+      * Agree to the terms and press register
+      * Copy the key. Keep this key private.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
   * Once that has been completed, the program should be ready to run! Follow the onscren prompts when using it.
   * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while until it rolls through the games quickly.
