@@ -1,19 +1,19 @@
 import requests,os,json,random,time,subprocess,climage,datetime
 from pathlib import Path
 
-api_key = ""
-user_id = ""
-
-
-randomized_game_list = []
-previous_games = []
-
 def get_games():
+
+    api_key = ""
+    user_id = ""
+    randomized_game_list = []
+    previous_games = []
+
     file_path,img_path = create_storage_files()
     with open(f'{file_path}exclusion_list.json', 'r') as exclusion_file: 
         exclusion_data = json.load(exclusion_file) 
         permanently_excluded = exclusion_data['permanently_excluded']
         temporarily_excluded = ""
+        
     print("-" * 30)
     choice = input("Welcome. Input 'Y' to get a refreshed game list. Any other key uses cached data.\n")
     
@@ -21,38 +21,40 @@ def get_games():
         try:
             clear_terminal()
 
-            print("Opening file with User ID & API Key..")
             try:
+                print("Opening file with User ID & API Key..")
                 with open(f'{file_path}keyids.json', 'r') as ids_file: 
                     data = json.load(ids_file) 
                     api_key = data['api_key']
                     user_id = data['user_id']
             except:
                 create_storage_files()
+
             if api_key == '' or user_id == '':
                 print("API Key and/or User ID not found.")
                 time.sleep(5)
                 exit()
-            print("API Key and User ID found.")
-            print("Making API request...")
+
+            print("API Key and User ID found.\nMaking API request...")
             url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1"
             response = requests.get(url)
 
             print(f"Got response with status code {response.status_code}.")
-            time.sleep(1)
+            time.sleep(0.5)
             if choice.lower() == 'ydebug':
                 print(json.dumps(response.json(), indent=4))
                 input("Input any key to continue.")
-            game_data = response.json()
 
+            game_data = response.json()
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
                 json.dump(game_data, game_file, indent=4)
-
             print(f"Game list refreshed and cached.")
             time.sleep(0.1)
+
         except Exception as e:
             print(f"Error: {e}")
             input(f'Press any key to continue.\n')
+
     try:
         with open(f'{file_path}last_game_data.json', 'r') as game_file: 
             data = json.load(game_file) 
@@ -62,6 +64,7 @@ def get_games():
         print(f'Game cache empty and/or cache file not found. Rerun the program and refresh the cache. {e}')
         time.sleep(5)
         exit()
+
     for game in range(game_num):
         try:
             game_details = [
@@ -77,63 +80,69 @@ def get_games():
 
     permanently_excluded_split = permanently_excluded.split('|')
     all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
-
     if_go_back = False
     reroll_queue = False
 
     while 1:
-        title, playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
+        title,playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
         
-
         if os.path.exists(img_path) != True:
             print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
+
             try:
                 url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/library_hero.jpg"
                 response = requests.get(url)
 
                 if response.status_code != 200:
                     url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg"
-                    response = requests.get(url)                   
+                    response = requests.get(url)    
+
                 with open(img_path, "wb") as f:
                     f.write(response.content)
                 clear_terminal()
                 
             except:
                 print("Game image not found.")
-        print("-" * 80,'\n')   
+
         try: 
+            print("-" * 80,'\n') 
             image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
             print(image)
         except:
             print("Game image not found.")
-        print("-" * 80)
-        if last_played == 0:
-            last_played = "Never played."
-        else:
-            last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
-        print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}")
+
         print("-" * 80)
 
-        temporarily_excluded_split = temporarily_excluded.split('|')
-        for game in range(len(temporarily_excluded_split)):
-            if game == title:
-                print(f"{title} has been found in the temporary list.")
-        permanently_excluded_split = permanently_excluded.split('|')
-        for game in range(len(permanently_excluded_split)):
-            if game == title:
-                print(f"{title} has been found in the permanent list.")
+        if last_played != 0:
+            last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
+        else:
+            last_played = "Never played."
+
+        print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}\n","-" * 80)
+
+        #old test code
+        # temporarily_excluded_split = temporarily_excluded.split('|')
+        # for game in range(len(temporarily_excluded_split)):
+        #     if game == title:
+        #         print(f"{title} has been found in the temporary list.")
+
+        # permanently_excluded_split = permanently_excluded.split('|')
+        # for game in range(len(permanently_excluded_split)):
+        #     if game == title:
+        #         print(f"{title} has been found in the permanent list.")
+
         choice = input(f"Input 'Run' to launch {title}.\nInput 'X' to add {title} to excluded games list permanently.\nInput 'Z' to add {title} to excluded games list for current session.\nInput 'C' to see excluded games.\nInput 'B' to go back by 1 game.\nInput 'R' to reroll the queue of games.\nInput 'E' to exit.\nPress/Input any other key to reroll.\n")
 
         if_go_back = False
         reroll_queue = False
+
         if choice.lower() == 'run': #launch game
-            #subprocess.Popen(['steam', '&'])
             try:
                 subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
             except Exception as e:
                 print(f"Unable to run game with error {e}.")
         
-        if choice.lower() == 'x': #exclude game permanently
+        elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
             print(f"{title} excluded permanently.")
 
@@ -249,10 +258,14 @@ def get_games():
 
         elif choice.lower() == 'r': #reroll the roll queue
             reroll_queue = True
+
         elif choice.lower() == 'e': #exit
             exit()
+
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
+
 def create_storage_files():
+
     file_path = r"~/"
     file_path = Path(__file__).resolve().parent
     file_path = os.path.join(str(file_path), "storage", "")
@@ -261,10 +274,7 @@ def create_storage_files():
         os.mkdir(file_path)
     except:
         pass
-    try:
-        os.mkdir(file_path)
-    except:
-        pass
+
     try:
         img_path = ''
         img_path = os.path.join(str(file_path), "images", "")
@@ -272,22 +282,26 @@ def create_storage_files():
     except Exception as e:
         pass
 
-    #print(os.path.exists(f'{file_path}exclusion_list.json') == False,os.path.exists(f'{file_path}keyids.json') == False,os.path.exists(f'{file_path}last_game_data.json') == False)
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False:
+        
         choice = input("One or more storage files not found. Create them? (Y)\n")
         clear_terminal()
+
         if choice.lower() == 'y':
-            print("Closing the program during this file creation process could lead to issues when running the program later on.")
-            print(f"If so, delete the files manually at {file_path} and try again.")
+            print(f"Closing the program during this file creation process could lead to issues when running the program later on.\nIf so, delete the files manually at {file_path} and try again.")
+            time.sleep(0.2)
             input("Input/Press any key to continue.\n")
             clear_terminal()
+
             print(f"Creating game exlusion storage file at {file_path}exclusion_list.json.")
             time.sleep(0.2)
+
             with open(f'{file_path}exclusion_list.json', 'w') as file: 
                 data = {
                     "permanently_excluded": ""
                 }
                 json.dump(data,file,indent=4)
+
             api_key = input(f"Input API key. These can be changed later by opening {file_path}keyids.json.\n")
             clear_terminal()
             user_id = input(f"Input User ID key. These can be changed later by opening {file_path}keyids.json.\n")
@@ -299,11 +313,14 @@ def create_storage_files():
                     "user_id": f"{user_id}"
                 }
                 json.dump(data,file,indent=4)
+            time.sleep(0.2)
+
             print(f"Creating empty storage file at {file_path}last_game_data.json.")
             time.sleep(0.2)
             with open(f'{file_path}last_game_data.json', 'w') as file: 
                 data = {}
                 json.dump(data,file,indent=4)
+            
         else:
             exit()
     return file_path,img_path
@@ -317,9 +334,11 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
         randomized_game_list = all_game_details.copy()
 
     permanently_excluded_split = permanently_excluded.split('|')
-    temporarily_excluded_split = temporarily_excluded.split('| ')
+    temporarily_excluded_split = temporarily_excluded.split('|')
+
     game_choice = []
     clear_terminal()
+
     if if_go_back == False:
         game_choice = randomized_game_list.pop(0)
         previous_games.append(game_choice)
@@ -338,6 +357,7 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
         print(f"Error reading game data: {e}")
 
     total_minutes = int(game_choice[1])
+
     if total_minutes >= 60:
         hours = total_minutes // 60
         minutes = total_minutes % 60
@@ -349,8 +369,10 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
 
     return title, playtime,app_url,app_id,last_played
-try:
-    get_games()
-except KeyboardInterrupt:
-    print("\nExiting...")
-    exit(0)
+
+if __name__ == "__main__":
+    try:
+        get_games()
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        exit(0)
