@@ -1,0 +1,4 @@
+storage/tmp/*
+storage/last_game_data.json
+storage/exclusion_list.json
+storage/keyids.json
