@@ -1,4 +1,4 @@
-#Steam Game Randomizer
+# Steam Game Randomizer
 Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
 
 ## Features
