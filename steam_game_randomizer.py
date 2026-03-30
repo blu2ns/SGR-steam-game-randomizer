@@ -45,8 +45,10 @@ def main():
     reroll_queue = False
 
     while 1:
-        title,playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
+        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games)
         
+        img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
+        #print(img_path)
         if os.path.exists(img_path) != True:
             print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
 
@@ -263,7 +265,7 @@ def get_games(file_path,api_key,user_id):
         except Exception as e:
             print(f"Error: {e}")
             input(f'Press any key to continue.\n')
-
+    
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 
 def create_storage_files():
@@ -304,9 +306,9 @@ def create_storage_files():
                 }
                 json.dump(data,file,indent=4)
 
-            api_key = input(f"Input API key. These can be changed later by opening {file_path}keyids.json.\n")
+            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\n")
             clear_terminal()
-            user_id = input(f"Input User ID key. These can be changed later by opening {file_path}keyids.json.\n")
+            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\n")
             clear_terminal()
             print(f"Storing credentials at {file_path}keyids.json.")
             with open(f'{file_path}keyids.json', 'w') as file: 
@@ -327,10 +329,7 @@ def create_storage_files():
             exit()
     return file_path,img_path
 
-def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue):
-    
-    global randomized_game_list
-    global previous_games
+def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games):
 
     if len(randomized_game_list) == 0 or reroll_queue == True:
         random.shuffle(all_game_details)
@@ -371,7 +370,7 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
     else:
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
 
-    return title, playtime,app_url,app_id,last_played
+    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games
 
 if __name__ == "__main__":
     try:
