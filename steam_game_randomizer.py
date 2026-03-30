@@ -83,17 +83,6 @@ def main():
 
         print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}\n","-" * 80)
 
-        #old test code
-        # temporarily_excluded_split = temporarily_excluded.split('|')
-        # for game in range(len(temporarily_excluded_split)):
-        #     if game == title:
-        #         print(f"{title} has been found in the temporary list.")
-
-        # permanently_excluded_split = permanently_excluded.split('|')
-        # for game in range(len(permanently_excluded_split)):
-        #     if game == title:
-        #         print(f"{title} has been found in the permanent list.")
-
         choice = input(f"Input 'Run' to launch {title}.\nInput 'X' to add {title} to excluded games list permanently.\nInput 'Z' to add {title} to excluded games list for current session.\nInput 'C' to see excluded games.\nInput 'B' to go back by 1 game.\nInput 'R' to reroll the queue of games.\nInput 'E' to exit.\nPress/Input any other key to reroll.\n")
 
         if_go_back = False
@@ -168,21 +157,43 @@ def main():
             else:
                 print("No temporarily excluded games.")
             print('')
-            choice = str(input("Input the number of a game you would like to reinclude plus first letter for the exclusion pool. Eg. (2p,4t), etc. \nInput/Press any other  key to continue.\n"))
+            choice = str(input("Input the number of a game you would like to reinclude plus first letter for the exclusion pool. Eg. (2p,4t), etc. \nInput 'clear permanent' or 'clear temporary' to clear the entire exclusion list of that type.\nInput/Press any other  key to continue.\n"))
             
             try: 
-                number_choice = int(choice[0])
+                number_choice = choice[0]
                 pool_choice = choice[1]
-                if isinstance(number_choice,int) and pool_choice == 'p' or pool_choice == 't':
+                if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
+                    if choice[6] == 'p':
+                        permanently_excluded = ''
+                        permanently_excluded_split = []
+                        with open(f'{file_path}exclusion_list.json','w') as file:
+                            data = {
+                                "permanently_excluded": f"{permanently_excluded}"
+                            }
+                            json.dump(data,file,indent=4)
+                            
+                        print("Rerolling game queue based on new exclusion list..")
+                        time.sleep(1.5)
+                        randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
+                        
+                    elif choice[6] == 't':
+                        temporarily_excluded = ''
+                        temporarily_excluded_split = []
+
+                        print("Rerolling game queue based on new exclusion list..")
+                        time.sleep(1.5)
+                        randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
+                        
+                elif isinstance(number_choice,int) and pool_choice == 'p' or pool_choice == 't':
                     try:
                         if pool_choice == 't': 
                             if temporarily_excluded_split[number_choice] != '':
 
                                 temporarily_excluded_split.pop(number_choice)
-                                permanently_excluded = ""
+                                temporarily_excluded = ""
 
                                 for game in range(len(temporarily_excluded_split)):
-                                    permanently_excluded = '|'.join(temporarily_excluded_split)
+                                    temporarily_excluded = '|'.join(temporarily_excluded_split)
 
                                 print(f"Game removed.")
 
