@@ -6,8 +6,10 @@ user_id = ""
 
 file_path = r"~/"
 file_path = Path(__file__).resolve().parent
-file_path = str(file_path) + '/storage/'
-
+if os.name == 'nt': 
+    file_path = str(file_path) + '\storage\\'
+else:
+    file_path = str(file_path) + r'/storage/'
 randomized_game_list = []
 previous_games = []
 
@@ -86,8 +88,11 @@ def get_games():
     while 1:
         title, playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
         
-
-        img_path = f"{file_path}tmp/steam_{app_id}.jpg"
+        img_path = ''
+        if os.name == 'nt': 
+            img_path = f"{file_path}tmp\\steam_{app_id}.jpg"
+        else:
+            img_path = f"{file_path}tmp/steam_{app_id}.jpg"
         
         if os.path.exists(img_path) != True:
             print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
@@ -104,9 +109,12 @@ def get_games():
                 
             except:
                 print("Game image not found.")
-        print("-" * 80,'\n')    
-        image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
-        print(image)
+        print("-" * 80,'\n')   
+        try: 
+            image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
+            print(image)
+        except:
+            print("Game image not found.")
         print("-" * 80)
         if last_played == 0:
             last_played = "Never played."
@@ -251,6 +259,22 @@ def get_games():
             exit()
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 def create_storage_files():
+    try:
+        os.mkdir(file_path)
+    except:
+        pass
+    try:
+        img_path = ''
+        if os.name == 'nt': 
+            img_path = f"{file_path}tmp\\"
+            os.mkdir(img_path)
+        else:
+            img_path = f"{file_path}tmp/"
+            os.mkdir(img_path)
+        
+    except:
+        pass
+
     #print(os.path.exists(f'{file_path}exclusion_list.json') == False,os.path.exists(f'{file_path}keyids.json') == False,os.path.exists(f'{file_path}last_game_data.json') == False)
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False:
         choice = input("One or more storage files not found. Create them? (Y)\n")
