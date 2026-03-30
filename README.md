@@ -7,7 +7,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Exclude games from being shown to you
     
 ## Why use this over something like the steamDB game randomizer?
-  * Allows you to pull your game list from the API even with your account being private
+  * Allows you to pull your game list from the API even with your account being private (if you use the api key assigned to the user id you are using)
   * Faster rerolling
   * Run the game faster, instead of opening your steam library and finding the game
   * Exclude unwanted games from showing up in the randomizer
