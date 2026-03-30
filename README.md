@@ -1,16 +1,16 @@
 # Steam Game Randomizer
-##Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
-  ###Features:
+## Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
+  ### Features:
     Shows a random game from your steam library
     Run the game from the randomizer instead of opening your steam library and finding the game
     Exclude games from being shown to you 
-##Why use this over something like the steamDB game randomizer?
+## Why use this over something like the steamDB game randomizer?
   This program allows you to pull your game list from the API even with your account being private 
   Faster rerolling
   Run the game faster, instead of opening your steam library and finding the game
   Exclude unwanted games from showing up
 
-##Setup
+## Setup
   Download the steam_game_randomizer.py file
   Run the program, it will automatically prompt you to create the necessary files it needs. (It's best to put the .py file into its own folder)
   The program will prompt you to input a API key and User ID. Follow the instructions below if you need help with this step.
