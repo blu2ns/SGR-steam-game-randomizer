@@ -13,9 +13,9 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Exclude unwanted games from showing up in the randomizer
   * Runs locally
 ## Prereqrisites:
-   Python 3.12 or higher
-   climage
-   requests
+  * Python 3.12 or higher
+  * climage
+  * requests
 ## Setup
    * Clone the repository
    * Install dependencies with pip install -r ~/path/to/requirements.txt 
