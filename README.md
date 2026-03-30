@@ -2,8 +2,8 @@
 Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
 
 ## Features
-  * Shows a random game from your steam library
-  * Run the game from the randomizer instead of opening your steam library and finding the game
+  * Shows a random game from your steam library - reroll as many times as you want
+  * Run the game directly from the randomizer instead of opening your steam library and finding the game
   * Exclude games from being shown to you
     
 ## Why use this over something like the steamDB game randomizer?
@@ -44,7 +44,5 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
     
   * Once that has been completed, the program should be ready to run! Follow the onscreen prompts when using it.
-    
-  * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while to get every game's image cached until rerolls go through your games fast.
     
   For linux users: I recommend creating a .desktop entry with the path to the script, it makes it easier to find and run. For windows users: I recommend switching to linux. 

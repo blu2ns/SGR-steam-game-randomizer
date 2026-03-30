@@ -2,7 +2,6 @@ import requests,os,json,random,time,subprocess,climage,datetime
 from pathlib import Path
 
 def main():
-
     api_key = ""
     user_id = ""
     randomized_game_list = []
@@ -20,6 +19,12 @@ def main():
     if_go_back = False
     reroll_queue = False
 
+    clear_terminal()
+    choice = input("Refresh game image cache? This step is only necessary to do once. It may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
+    if choice.lower() == 'r':
+        refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=True)
+    elif choice.lower() == 'g':
+        refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games)
         
@@ -57,9 +62,10 @@ def main():
         else:
             last_played = "Never played."
 
-        print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}\n","-" * 80)
+        print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}")
+        print("-" * 80)
 
-        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back {' ' * 5}[E] Exit    ")
+        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit    ")
         choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
@@ -222,6 +228,36 @@ def main():
         elif choice.lower() == 'e': #exit
             exit()
 
+def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all):
+    parse_game_data(file_path,permanently_excluded)
+
+    for game in range(len(all_game_details)):
+        title = all_game_details[game][0]
+        id = all_game_details[game][3]
+        img_path = os.path.join(str(file_path), "images", f"{id}.jpg")
+        if refresh_all == False and os.path.exists(img_path) == True:
+            print(f"Image already exists for {title}. Skipping.")
+            time.sleep(0.01)
+            clear_terminal()
+            continue
+        try:
+            clear_terminal()
+            print(f"Getting image for {title}. [{game + 1}/{len(all_game_details)}]")
+            url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{id}/library_hero.jpg"
+            response = requests.get(url)
+
+            if response.status_code != 200:
+                url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{id}/header.jpg"
+                response = requests.get(url)    
+
+            with open(img_path, "wb") as f:
+                f.write(response.content)
+            clear_terminal()
+            print(f"Image found for {title}. [{game + 1}/{len(all_game_details)}]")
+        except:
+            print(f"Game image and backup game image for {title} not found.")
+
+    input("Game images successfully cached. [Enter] Continue\n")
 def parse_game_data(file_path,permanently_excluded):
     try:
         with open(f'{file_path}last_game_data.json', 'r') as game_file: 
@@ -284,8 +320,8 @@ def get_games(file_path,api_key,user_id):
             game_data = response.json()
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
                 json.dump(game_data, game_file, indent=4)
-            print(f"Game list refreshed and cached.")
-            time.sleep(0.1)
+            print(f"Game list successfully refreshed and cached.")
+            time.sleep(2)
 
         except Exception as e:
             print(f"Error: {e}")
