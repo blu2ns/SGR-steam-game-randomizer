@@ -1,7 +1,7 @@
 import requests,os,json,random,time,subprocess,climage,datetime
 from pathlib import Path
 
-def get_games():
+def main():
 
     api_key = ""
     user_id = ""
@@ -14,46 +14,7 @@ def get_games():
         permanently_excluded = exclusion_data['permanently_excluded']
         temporarily_excluded = ""
         
-    print("-" * 30)
-    choice = input("Welcome. Input 'Y' to get a refreshed game list. Any other key uses cached data.\n")
-    
-    if choice.lower() == 'y' or choice.lower() == 'ydebug':
-        try:
-            clear_terminal()
-
-            try:
-                print("Opening file with User ID & API Key..")
-                with open(f'{file_path}keyids.json', 'r') as ids_file: 
-                    data = json.load(ids_file) 
-                    api_key = data['api_key']
-                    user_id = data['user_id']
-            except:
-                create_storage_files()
-
-            if api_key == '' or user_id == '':
-                print("API Key and/or User ID not found.")
-                time.sleep(5)
-                exit()
-
-            print("API Key and User ID found.\nMaking API request...")
-            url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1"
-            response = requests.get(url)
-
-            print(f"Got response with status code {response.status_code}.")
-            time.sleep(0.5)
-            if choice.lower() == 'ydebug':
-                print(json.dumps(response.json(), indent=4))
-                input("Input any key to continue.")
-
-            game_data = response.json()
-            with open(f'{file_path}last_game_data.json', 'w') as game_file:
-                json.dump(game_data, game_file, indent=4)
-            print(f"Game list refreshed and cached.")
-            time.sleep(0.1)
-
-        except Exception as e:
-            print(f"Error: {e}")
-            input(f'Press any key to continue.\n')
+    get_games(file_path,api_key,user_id)
 
     try:
         with open(f'{file_path}last_game_data.json', 'r') as game_file: 
@@ -262,6 +223,47 @@ def get_games():
         elif choice.lower() == 'e': #exit
             exit()
 
+def get_games(file_path,api_key,user_id):
+    choice = input(f"{"-" * 30}\nWelcome. Input 'Y' to get a refreshed game list. Any other key uses cached data.\n")
+    
+    if choice.lower() == 'y' or choice.lower() == 'ydebug':
+        try:
+            clear_terminal()
+
+            try:
+                print("Opening file with User ID & API Key..")
+                with open(f'{file_path}keyids.json', 'r') as ids_file: 
+                    data = json.load(ids_file) 
+                    api_key = data['api_key']
+                    user_id = data['user_id']
+            except:
+                create_storage_files()
+
+            if api_key == '' or user_id == '':
+                print("API Key and/or User ID not found.")
+                time.sleep(5)
+                exit()
+
+            print("API Key and User ID found.\nMaking API request...")
+            url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1"
+            response = requests.get(url)
+
+            print(f"Got response with status code {response.status_code}.")
+            time.sleep(0.5)
+            if choice.lower() == 'ydebug':
+                print(json.dumps(response.json(), indent=4))
+                input("Input any key to continue.")
+
+            game_data = response.json()
+            with open(f'{file_path}last_game_data.json', 'w') as game_file:
+                json.dump(game_data, game_file, indent=4)
+            print(f"Game list refreshed and cached.")
+            time.sleep(0.1)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            input(f'Press any key to continue.\n')
+
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 
 def create_storage_files():
@@ -324,6 +326,7 @@ def create_storage_files():
         else:
             exit()
     return file_path,img_path
+
 def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue):
     
     global randomized_game_list
@@ -372,7 +375,7 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
 
 if __name__ == "__main__":
     try:
-        get_games()
+        main()
     except KeyboardInterrupt:
         print("\nExiting...")
         exit(0)
