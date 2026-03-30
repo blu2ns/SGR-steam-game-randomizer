@@ -1,0 +1,2 @@
+climage==0.2.2
+Requests==2.33.1
