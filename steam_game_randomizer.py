@@ -15,32 +15,8 @@ def main():
         temporarily_excluded = ""
         
     get_games(file_path,api_key,user_id)
+    permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
-    try:
-        with open(f'{file_path}last_game_data.json', 'r') as game_file: 
-            data = json.load(game_file) 
-        game_num = data['response']['game_count']
-        all_game_details = []
-    except Exception as e:
-        print(f'Game cache empty and/or cache file not found. Rerun the program and refresh the cache. {e}')
-        time.sleep(5)
-        exit()
-
-    for game in range(game_num):
-        try:
-            game_details = [
-                data['response']['games'][game]['name'],
-                data['response']['games'][game]['playtime_forever'] + data['response']['games'][game]['playtime_disconnected'],
-                data['response']['games'][game]['img_icon_url'],
-                data['response']['games'][game]['appid'],
-                data['response']['games'][game]['rtime_last_played']
-            ]
-            all_game_details.append(game_details)
-        except:
-            break
-
-    permanently_excluded_split = permanently_excluded.split('|')
-    all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
     if_go_back = False
     reroll_queue = False
 
@@ -50,7 +26,7 @@ def main():
         img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
         #print(img_path)
         if os.path.exists(img_path) != True:
-            print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
+            print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
 
             try:
                 url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/library_hero.jpg"
@@ -83,8 +59,8 @@ def main():
 
         print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}\n","-" * 80)
 
-        choice = input(f"Input 'Run' to launch {title}.\nInput 'X' to add {title} to excluded games list permanently.\nInput 'Z' to add {title} to excluded games list for current session.\nInput 'C' to see excluded games.\nInput 'B' to go back by 1 game.\nInput 'R' to reroll the queue of games.\nInput 'E' to exit.\nPress/Input any other key to reroll.\n")
-
+        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back {' ' * 5}[E] Exit    ")
+        choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
 
@@ -157,75 +133,85 @@ def main():
             else:
                 print("No temporarily excluded games.")
             print('')
-            choice = str(input("Input the number of a game you would like to reinclude plus first letter for the exclusion pool. Eg. (2p,4t), etc. \nInput 'clear permanent' or 'clear temporary' to clear the entire exclusion list of that type.\nInput/Press any other  key to continue.\n"))
+            choice = str(input("Input the first letter of the exclusion pool you would like to remove from, followed by the number associated with the game you would like to remove. Eg. (p2,t4), etc. \n[Clear P] Clear Permanently Excluded list. [Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
             
             try: 
-                number_choice = choice[0]
-                pool_choice = choice[1]
-                if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
-                    if choice[6] == 'p':
-                        permanently_excluded = ''
-                        permanently_excluded_split = []
-                        with open(f'{file_path}exclusion_list.json','w') as file:
-                            data = {
-                                "permanently_excluded": f"{permanently_excluded}"
-                            }
-                            json.dump(data,file,indent=4)
+                if choice != '':
+                    if choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
+                        try:
+                            pool_choice = choice[0]
+                            number_choice = int(choice[1:len(choice)])
+                            print(pool_choice, number_choice)
+                        except:
+                            clear_terminal()
+                            print("Invalid Input. Try again later.")
+                            time.sleep(3)
+                    if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
+                        if choice[6] == 'p':
+                            permanently_excluded = ''
+                            permanently_excluded_split = []
+                            with open(f'{file_path}exclusion_list.json','w') as file:
+                                data = {
+                                    "permanently_excluded": f"{permanently_excluded}"
+                                }
+                                json.dump(data,file,indent=4)
+                                
+                            print("Rerolling game queue based on new exclusion list..")
+                            time.sleep(1.5)
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
                             
-                        print("Rerolling game queue based on new exclusion list..")
-                        time.sleep(1.5)
-                        randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
-                        
-                    elif choice[6] == 't':
-                        temporarily_excluded = ''
-                        temporarily_excluded_split = []
+                        elif choice[6] == 't':
+                            temporarily_excluded = ''
+                            temporarily_excluded_split = []
 
-                        print("Rerolling game queue based on new exclusion list..")
-                        time.sleep(1.5)
-                        randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
-                        
-                elif isinstance(number_choice,int) and pool_choice == 'p' or pool_choice == 't':
-                    try:
-                        if pool_choice == 't': 
-                            if temporarily_excluded_split[number_choice] != '':
+                            print("Rerolling game queue based on new exclusion list..")
+                            time.sleep(1.5)
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
+                        permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)    
+                    elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
+                        try:
+                            if pool_choice == 't': 
+                                if temporarily_excluded_split[number_choice] != '':
 
-                                temporarily_excluded_split.pop(number_choice)
-                                temporarily_excluded = ""
+                                    removed_title = temporarily_excluded_split.pop(number_choice)
+                                    temporarily_excluded = ""
 
-                                for game in range(len(temporarily_excluded_split)):
-                                    temporarily_excluded = '|'.join(temporarily_excluded_split)
+                                    for game in range(len(temporarily_excluded_split)):
+                                        temporarily_excluded = '|'.join(temporarily_excluded_split)
 
-                                print(f"Game removed.")
+                                    print(f"{removed_title} removed.")
 
-                            else: print("No game located at that position.")
-                        else: 
-                            permanently_excluded_split = permanently_excluded.split('|')
+                                else: print("No game located at that position.")
+                            else: 
+                                permanently_excluded_split = permanently_excluded.split('|')
 
-                            if permanently_excluded_split[number_choice] != '':
+                                if permanently_excluded_split[number_choice] != '':
 
-                                permanently_excluded_split.pop(number_choice)
-                                permanently_excluded = ""
+                                    removed_title = permanently_excluded_split.pop(number_choice)
+                                    permanently_excluded = ""
 
-                                for game in range(len(permanently_excluded_split)):
-                                    permanently_excluded = "|".join(permanently_excluded_split)
-                                with open(f'{file_path}exclusion_list.json','w') as file:
-                                    data = {
-                                        "permanently_excluded": f"{permanently_excluded}"
-                                    }
-                                    json.dump(data,file,indent=4)
+                                    for game in range(len(permanently_excluded_split)):
+                                        permanently_excluded = "|".join(permanently_excluded_split)
+                                    with open(f'{file_path}exclusion_list.json','w') as file:
+                                        data = {
+                                            "permanently_excluded": f"{permanently_excluded}"
+                                        }
+                                        json.dump(data,file,indent=4)
 
-                                print(f"Game removed.")
+                                    print(f"{removed_title} removed.")
 
-                            else: print("No game located at that position.")
-                    except Exception as e:
-                        print(f"No game located at that position. {e}")
-                        time.sleep(4)
-                    time.sleep(1)
-                else:
-                    print("Invalid Input. Try again later.")
-                    time.sleep(2)
-            except:
-                pass
+                                else: print("No game located at that position.")
+                        except Exception as e:
+                            print(f"No game located at that position. {e}")
+                            time.sleep(4)
+                        permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
+                        time.sleep(1)
+                    else:
+                        print("Invalid Input. Try again later.")
+                        time.sleep(3)
+            except Exception as e:
+                print(f"Error: {e}")
+                time.sleep(3)
         
         elif choice.lower() == 'b': # go back by one game
             if_go_back = True
@@ -236,8 +222,35 @@ def main():
         elif choice.lower() == 'e': #exit
             exit()
 
+def parse_game_data(file_path,permanently_excluded):
+    try:
+        with open(f'{file_path}last_game_data.json', 'r') as game_file: 
+            data = json.load(game_file) 
+        game_num = data['response']['game_count']
+        all_game_details = []
+    except Exception as e:
+        print(f'Game cache empty and/or cache file not found. Rerun the program and refresh the cache. {e}')
+        time.sleep(5)
+        exit()
+
+    for game in range(game_num):
+        try:
+            game_details = [
+                data['response']['games'][game]['name'],
+                data['response']['games'][game]['playtime_forever'] + data['response']['games'][game]['playtime_disconnected'],
+                data['response']['games'][game]['img_icon_url'],
+                data['response']['games'][game]['appid'],
+                data['response']['games'][game]['rtime_last_played']
+            ]
+            all_game_details.append(game_details)
+        except:
+            break
+
+    permanently_excluded_split = permanently_excluded.split('|')
+    all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
+    return permanently_excluded_split, all_game_details,game_num
 def get_games(file_path,api_key,user_id):
-    choice = input(f"{"-" * 30}\nWelcome. Input 'Y' to get a refreshed game list. Any other key uses cached data.\n")
+    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. (required for first ever program run) [Other] Continue without refresh.\n")
     
     if choice.lower() == 'y' or choice.lower() == 'ydebug':
         try:
@@ -265,7 +278,7 @@ def get_games(file_path,api_key,user_id):
             time.sleep(0.5)
             if choice.lower() == 'ydebug':
                 print(json.dumps(response.json(), indent=4))
-                input("Input any key to continue.")
+                input("[Enter] Continue")
 
             game_data = response.json()
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
@@ -275,7 +288,7 @@ def get_games(file_path,api_key,user_id):
 
         except Exception as e:
             print(f"Error: {e}")
-            input(f'Press any key to continue.\n')
+            input("[Enter] Continue")
     
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -299,28 +312,33 @@ def create_storage_files():
 
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False:
         
-        choice = input("One or more storage files not found. Create them? (Y)\n")
+        choice = input("One or more storage files not found. [Y] Create Files [Other] Close Program\n")
         clear_terminal()
 
         if choice.lower() == 'y':
             print(f"Closing the program during this file creation process could lead to issues when running the program later on.\nIf so, delete the files manually at {file_path} and try again.")
-            time.sleep(0.2)
-            input("Input/Press any key to continue.\n")
+            time.sleep(3)
+            input("[Enter] Continue\n")
             clear_terminal()
 
             print(f"Creating game exlusion storage file at {file_path}exclusion_list.json.")
-            time.sleep(0.2)
-
+            time.sleep(3)
+            clear_terminal()
             with open(f'{file_path}exclusion_list.json', 'w') as file: 
                 data = {
                     "permanently_excluded": ""
                 }
                 json.dump(data,file,indent=4)
 
-            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\n")
+            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page.\n")
             clear_terminal()
-            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\n")
+            print("API key added.")
+            time.sleep(1)
             clear_terminal()
+            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page.\n")
+            clear_terminal()
+            print("User ID added.")
+            time.sleep(1)
             print(f"Storing credentials at {file_path}keyids.json.")
             with open(f'{file_path}keyids.json', 'w') as file: 
                 data = {
@@ -328,10 +346,11 @@ def create_storage_files():
                     "user_id": f"{user_id}"
                 }
                 json.dump(data,file,indent=4)
-            time.sleep(0.2)
-
+            time.sleep(3)
+            clear_terminal()
             print(f"Creating empty storage file at {file_path}last_game_data.json.")
-            time.sleep(0.2)
+            time.sleep(3)
+            clear_terminal()
             with open(f'{file_path}last_game_data.json', 'w') as file: 
                 data = {}
                 json.dump(data,file,indent=4)
