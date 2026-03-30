@@ -6,8 +6,11 @@ user_id = ""
 
 file_path = r"~/"
 file_path = Path(__file__).resolve().parent
-file_path = os.path.join(str(file_path), "storage")
-file_path = os.path.join(file_path, "") 
+file_path = os.path.join(str(file_path), "storage", "")
+try:
+    os.mkdir(file_path)
+except:
+    pass
 randomized_game_list = []
 previous_games = []
 
@@ -83,13 +86,14 @@ def get_games():
 
     if_go_back = False
     reroll_queue = False
+
+    img_path = os.path.join(str(file_path), "tmp")
+    img_path = os.path.join(file_path, "") 
+    
     while 1:
         title, playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
         
-        img_path = ''
-        img_path = os.path.join(str(file_path), "tmp")
-        img_path = os.path.join(file_path, "") 
-        
+
         if os.path.exists(img_path) != True:
             print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
             try:
@@ -133,7 +137,10 @@ def get_games():
         reroll_queue = False
         if choice.lower() == 'run': #launch game
             #subprocess.Popen(['steam', '&'])
-            subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
+            try:
+                subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
+            except Exception as e:
+                print(f"Unable to run game with error {e}.")
         
         if choice.lower() == 'x': #exclude game permanently
             clear_terminal()
@@ -261,10 +268,9 @@ def create_storage_files():
         pass
     try:
         img_path = ''
-        img_path = os.path.join(str(file_path), "tmp")
-        img_path = os.path.join(file_path, "") 
-        
-    except:
+        img_path = os.path.join(str(file_path), "tmp", "")
+        os.mkdir(img_path)
+    except Exception as e:
         pass
 
     #print(os.path.exists(f'{file_path}exclusion_list.json') == False,os.path.exists(f'{file_path}keyids.json') == False,os.path.exists(f'{file_path}last_game_data.json') == False)
@@ -324,7 +330,7 @@ def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if
     try:
         title = game_choice[0]; app_url = game_choice[2]; app_id = game_choice[3]; last_played = game_choice[4]
     except Exception as e:
-        print(f"AHHHHH ERROR: {e}")
+        print(f"Error reading game data: {e}")
 
     total_minutes = int(game_choice[1])
     if total_minutes >= 60:
