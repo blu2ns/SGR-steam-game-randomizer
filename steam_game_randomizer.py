@@ -6,10 +6,8 @@ user_id = ""
 
 file_path = r"~/"
 file_path = Path(__file__).resolve().parent
-if os.name == 'nt': 
-    file_path = str(file_path) + '\storage\\'
-else:
-    file_path = str(file_path) + r'/storage/'
+file_path = os.path.join(str(file_path), "storage")
+file_path = os.path.join(file_path, "") 
 randomized_game_list = []
 previous_games = []
 
@@ -89,10 +87,8 @@ def get_games():
         title, playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
         
         img_path = ''
-        if os.name == 'nt': 
-            img_path = f"{file_path}tmp\\steam_{app_id}.jpg"
-        else:
-            img_path = f"{file_path}tmp/steam_{app_id}.jpg"
+        img_path = os.path.join(str(file_path), "tmp")
+        img_path = os.path.join(file_path, "") 
         
         if os.path.exists(img_path) != True:
             print("Getting game image. The first time a game is rolled may take longer due to this. Once cached, rolls will be faster.")
@@ -265,12 +261,8 @@ def create_storage_files():
         pass
     try:
         img_path = ''
-        if os.name == 'nt': 
-            img_path = f"{file_path}tmp\\"
-            os.mkdir(img_path)
-        else:
-            img_path = f"{file_path}tmp/"
-            os.mkdir(img_path)
+        img_path = os.path.join(str(file_path), "tmp")
+        img_path = os.path.join(file_path, "") 
         
     except:
         pass
