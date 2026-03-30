@@ -27,4 +27,4 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
       * Copy the key. Keep this key private.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
   * Once that has been completed, the program should be ready to run! Follow the onscren prompts when using it.
-  * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while until it rolls through the games quickly.
+  * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while to get every game's image cached until rerolls go through your games fast.
