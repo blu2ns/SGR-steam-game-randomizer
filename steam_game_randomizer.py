@@ -249,6 +249,7 @@ def parse_game_data(file_path,permanently_excluded):
     permanently_excluded_split = permanently_excluded.split('|')
     all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
     return permanently_excluded_split, all_game_details,game_num
+
 def get_games(file_path,api_key,user_id):
     choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. (required for first ever program run) [Other] Continue without refresh.\n")
     
@@ -407,4 +408,4 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\nExiting...")
-        exit(0)
+        exit()
