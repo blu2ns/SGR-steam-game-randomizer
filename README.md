@@ -15,15 +15,15 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Run the program, it will automatically prompt you to create the necessary files it needs. (It's best to put the .py file into its own folder)
   * The program will prompt you to input a API key and User ID. Follow the instructions below if you need help with this step.
     * How to find your user ID:
-      * Open the steam desktop app
+      * Open the steam desktop app.
       * Click on your profile picture in the top right.
-      * Click account details
+      * Click account details.
       * At the top left of the page, under the (usernames)'s account text, your user ID will be shown there.
     * How to set up an API key:
-      * Read the steam api terms [https://steamcommunity.com/dev](https://steamcommunity.com/dev/apiterms) if you wish.
-      * Go to https://steamcommunity.com/dev/apikey, make sure you're logged in
+      * Read the [steam api terms](https://steamcommunity.com/dev/apiterms) if you wish.
+      * Go to [the api key registration page](https://steamcommunity.com/dev/apikey), and make sure you're logged in.
       * For this application, put in 'localhost' into the field.
-      * Agree to the terms and press register
+      * Agree to the terms and press register.
       * Copy the key. Keep this key private.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
   * Once that has been completed, the program should be ready to run! Follow the onscren prompts when using it.
