@@ -4,18 +4,12 @@ from pathlib import Path
 api_key = ""
 user_id = ""
 
-file_path = r"~/"
-file_path = Path(__file__).resolve().parent
-file_path = os.path.join(str(file_path), "storage", "")
-try:
-    os.mkdir(file_path)
-except:
-    pass
+
 randomized_game_list = []
 previous_games = []
 
 def get_games():
-    create_storage_files()
+    file_path,img_path = create_storage_files()
     with open(f'{file_path}exclusion_list.json', 'r') as exclusion_file: 
         exclusion_data = json.load(exclusion_file) 
         permanently_excluded = exclusion_data['permanently_excluded']
@@ -87,9 +81,6 @@ def get_games():
     if_go_back = False
     reroll_queue = False
 
-    img_path = os.path.join(str(file_path), "tmp")
-    img_path = os.path.join(file_path, "") 
-    
     while 1:
         title, playtime,app_url,app_id,last_played = randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue)
         
@@ -262,13 +253,21 @@ def get_games():
             exit()
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 def create_storage_files():
+    file_path = r"~/"
+    file_path = Path(__file__).resolve().parent
+    file_path = os.path.join(str(file_path), "storage", "")
+
+    try:
+        os.mkdir(file_path)
+    except:
+        pass
     try:
         os.mkdir(file_path)
     except:
         pass
     try:
         img_path = ''
-        img_path = os.path.join(str(file_path), "tmp", "")
+        img_path = os.path.join(str(file_path), "images", "")
         os.mkdir(img_path)
     except Exception as e:
         pass
@@ -307,6 +306,7 @@ def create_storage_files():
                 json.dump(data,file,indent=4)
         else:
             exit()
+    return file_path,img_path
 def randomize_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue):
     
     global randomized_game_list
