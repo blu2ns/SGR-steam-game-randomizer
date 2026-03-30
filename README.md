@@ -1,11 +1,11 @@
 # Steam Game Randomizer
 Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
-  ## Features:
-    * Shows a random game from your steam library
-    * Run the game from the randomizer instead of opening your steam library and finding the game
-    * Exclude games from being shown to you 
+## Features
+  * Shows a random game from your steam library
+  * Run the game from the randomizer instead of opening your steam library and finding the game
+  * Exclude games from being shown to you 
 ## Why use this over something like the steamDB game randomizer?
-  * This program allows you to pull your game list from the API even with your account being private 
+  * Allows you to pull your game list from the API even with your account being private
   * Faster rerolling
   * Run the game faster, instead of opening your steam library and finding the game
   * Exclude unwanted games from showing up
