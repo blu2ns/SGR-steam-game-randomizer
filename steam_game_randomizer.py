@@ -64,8 +64,8 @@ def get_games():
             data = json.load(game_file) 
         game_num = data['response']['game_count']
         all_game_details = []
-    except:
-        print('Invalid input and/or Game cache empty and/or cache file not found. Rerun the program and refresh the cache.')
+    except Exception as e:
+        print(f'Game cache empty and/or cache file not found. Rerun the program and refresh the cache. {e}')
         time.sleep(5)
         exit()
     for game in range(game_num):
@@ -279,16 +279,20 @@ def create_storage_files():
         clear_terminal()
         if choice.lower() == 'y':
             print("Closing the program during this file creation process could lead to issues when running the program later on.")
-            print(f"If so, create the files manually at {file_path} according to the instructions on the github page.")
-            input("Press any key to continue.")
-            print(f"Creating template file at {file_path}exclusion_list.json.")
+            print(f"If so, delete the files manually at {file_path} and try again.")
+            input("Input/Press any key to continue.\n")
+            clear_terminal()
+            print(f"Creating game exlusion storage file at {file_path}exclusion_list.json.")
+            time.sleep(0.2)
             with open(f'{file_path}exclusion_list.json', 'w') as file: 
                 data = {
                     "permanently_excluded": ""
                 }
                 json.dump(data,file,indent=4)
             api_key = input(f"Input API key. These can be changed later by opening {file_path}keyids.json.\n")
+            clear_terminal()
             user_id = input(f"Input User ID key. These can be changed later by opening {file_path}keyids.json.\n")
+            clear_terminal()
             print(f"Storing credentials at {file_path}keyids.json.")
             with open(f'{file_path}keyids.json', 'w') as file: 
                 data = {
@@ -297,8 +301,9 @@ def create_storage_files():
                 }
                 json.dump(data,file,indent=4)
             print(f"Creating empty storage file at {file_path}last_game_data.json.")
+            time.sleep(0.2)
             with open(f'{file_path}last_game_data.json', 'w') as file: 
-                data = ''
+                data = {}
                 json.dump(data,file,indent=4)
         else:
             exit()

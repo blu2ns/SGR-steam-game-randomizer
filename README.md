@@ -11,6 +11,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Faster rerolling
   * Run the game faster, instead of opening your steam library and finding the game
   * Exclude unwanted games from showing up in the randomizer
+  * Runs locally
 
 ## Setup
   * Download the steam_game_randomizer.py file
@@ -32,7 +33,3 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * The first time the program is run, make sure to input Y when it asks to refresh the game list.
   * Once that has been completed, the program should be ready to run! Follow the onscren prompts when using it.
   * IMPORTANT: The first time a game is rolled, the program has to download the game's image. It slows down the rerolls, and so I recommend just holding down the enter key for a while to get every game's image cached until rerolls go through your games fast.
-  ### For errors in the file creation process:
-    * Go to the folder where you placed the .py file
-    * Delete the entire storage folder & its contents
-    * Run the program again and go through the file creation process again
