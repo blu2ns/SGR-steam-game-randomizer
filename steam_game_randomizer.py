@@ -26,7 +26,7 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
-        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games)
+        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
         
         img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
         #print(img_path)
@@ -168,7 +168,7 @@ def main():
                                 
                             print("Rerolling game queue based on new exclusion list..")
                             time.sleep(1.5)
-                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path)
                             
                         elif choice[6] == 't':
                             temporarily_excluded = ''
@@ -176,7 +176,7 @@ def main():
 
                             print("Rerolling game queue based on new exclusion list..")
                             time.sleep(1.5)
-                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games)
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path)
                         permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)    
                     elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
                         try:
@@ -401,7 +401,7 @@ def create_storage_files():
             exit()
     return file_path,img_path
 
-def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games):
+def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path):
 
     if len(randomized_game_list) == 0 or reroll_queue == True:
         random.shuffle(all_game_details)
@@ -414,8 +414,24 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
     clear_terminal()
 
     if if_go_back == False:
-        game_choice = randomized_game_list.pop(0)
-        previous_games.append(game_choice)
+        try:
+            game_choice = randomized_game_list.pop(0)
+            previous_games.append(game_choice)
+        except:
+            choice = input("No games found in list. Either you're very picky or you own no steam games. [Y] Clear exclusion preferences. [Other] Close program\n")
+            if choice.lower() == 'y':
+                permanently_excluded = ''
+                temporarily_excluded = ''
+                with open(f'{file_path}exclusion_list.json','w') as file:
+                    json.dump({"permanently_excluded": ""}, file, indent=4)
+
+                _, all_game_details, _ = parse_game_data(file_path, permanently_excluded)
+                random.shuffle(all_game_details)
+                randomized_game_list = all_game_details.copy()
+                game_choice = randomized_game_list.pop(0)
+                previous_games.append(game_choice)
+            else:
+                exit()
     else:
         try:
             randomized_game_list.insert(0, previous_games.pop()) 
