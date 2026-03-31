@@ -78,28 +78,32 @@ def main():
         
         elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
-            print(f"{title} excluded permanently.")
-
-            if permanently_excluded != "":
-                permanently_excluded = str(permanently_excluded) + "|" + str(title)
+            
+            permanently_excluded_split = permanently_excluded.split('|')
+            if title in permanently_excluded_split:
+                print("Game already in exclusion list.")
             else:
-                permanently_excluded = title
+                print(f"{title} excluded permanently.")
+                if permanently_excluded != "":
+                    permanently_excluded = str(permanently_excluded) + "|" + str(title)
+                else:
+                    permanently_excluded = title
 
+                
+                with open(f'{file_path}exclusion_list.json','w') as file:
+                    data = {
+                        "permanently_excluded": f"{permanently_excluded}"
+                    }
+                    json.dump(data,file,indent=4)
+                for game in range(len(all_game_details)):
+                    try:
+                        if all_game_details[game][0] == title:
+                            all_game_details.pop(game)
+                            break
+                    except:
+                        print(f"Error {e}.")
+                        input()
             time.sleep(1)
-            with open(f'{file_path}exclusion_list.json','w') as file:
-                data = {
-                    "permanently_excluded": f"{permanently_excluded}"
-                }
-                json.dump(data,file,indent=4)
-            for game in range(len(all_game_details)):
-                try:
-                    if all_game_details[game][0] == title:
-                        all_game_details.pop(game)
-                        break
-                except:
-                    print(f"Error {e}.")
-                    input()
-        
         elif choice.lower() == 'z': #exclude game temporarily
             clear_terminal()
             print(f"{title} excluded temporarily.")
@@ -258,6 +262,7 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
             print(f"Game image and backup game image for {title} not found.")
 
     input("Game images successfully cached. [Enter] Continue\n")
+
 def parse_game_data(file_path,permanently_excluded):
     try:
         with open(f'{file_path}last_game_data.json', 'r') as game_file: 
