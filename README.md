@@ -1,6 +1,6 @@
 # Steam Game Randomizer
-Welcome to the creatively named Steam Game Randomizer, or SGR for short. 
-
+Welcome to the creatively named Steam Game Randomizer, or SGR for short.
+![Screenshot](repo_images/info.png)
 ## Features
   * Shows a random game from your steam library - reroll as many times as you want
   * Run the game directly from the randomizer instead of opening your steam library and finding the game
