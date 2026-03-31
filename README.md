@@ -20,11 +20,13 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
 ## Setup
    * Clone the repository: ```git clone https://github.com/blu2ns/SGR-steam-game-randomizer.git ```
      
-   * Install dependencies with ``` pip install -r ~/path/to/requirements.txt ``` (for some linux distros you might need to add ```--break-system-packages```)
+   * Make sure python & pip are installed. Windows: ```winget install Python.Python.3``` Arch Linux: ```sudo pacman -S python python-pip``` Ubuntu/Debian Linux: ```sudo apt install python3 python3-pip```
      
-   * Run the program, it will automatically prompt you to create the necessary files it needs.
+   * Install dependencies with ```cd SGR-steam-game-randomizer``` then ``` pip install -r requirements.txt ``` (for some linux distros you might need to add ```--break-system-packages```)
      
-     * The program will prompt you to input a API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
+   * Run the program, it will automatically prompt you to create the necessary files it needs. On windows I believe you must run it through the terminal. ```python path/to/steam_game_randomizer.py```
+     
+   * The program will prompt you to input an API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
        
      * How to find your user ID:
         * Open steam desktop app, website or mobile app.
