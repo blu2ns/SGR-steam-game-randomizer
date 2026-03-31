@@ -47,9 +47,9 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
         * Copy the key. Keep this key private.
           
      When you have those credentials, paste them into the program when it asks.
-    
-  * The first time the program is run, make sure to input Y when it asks to refresh the game list.
-    
+
   * Once that has been completed, the program should be ready to run! Follow the onscreen prompts when using it.
+  
+  * The first time the program is run, make sure to input Y when it asks to refresh the game list. I also recommend having the program get each game's image when it prompts you as well.
     
   For linux users: I recommend creating a .desktop entry with the path to the script, it makes it easier to find and run. For windows users: I recommend switching to linux. 
