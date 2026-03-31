@@ -25,7 +25,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
       * Arch Linux: ```sudo pacman -S python python-pip```
       * Ubuntu/Debian Linux: ```sudo apt install python3 python3-pip```
         
-   * Install dependencies with ```cd SGR-steam-game-randomizer``` then ``` pip install -r requirements.txt ``` (for some linux distros you might need to add ```--break-system-packages```)
+   * Install dependencies with ```cd path/to/SGR-steam-game-randomizer``` then ``` pip install -r requirements.txt ``` (for some linux distros you might need to add ```--break-system-packages```)
      
    * Run the program, it will automatically prompt you to create the necessary files it needs. On windows I believe you must run it through the terminal.
       * Windows: ```python path/to/steam_game_randomizer.py```
