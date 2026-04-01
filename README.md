@@ -52,4 +52,6 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   
   * The first time the program is run, make sure to input Y when it asks to refresh the game list. I also recommend having the program get each game's image when it prompts you as well.
     
-  For linux users: I recommend creating a .desktop entry with the path to the script, it makes it easier to find and run. For windows users: I recommend switching to linux. 
+  For linux users: I recommend creating a .desktop entry with the path to the script, it makes it easier to find and run. 
+  For windows users: I have been told you can create a batch file to automate this. I am unsure how to do this as I use linux, so I recommend finding a guide online on how to do it. 
+  Both options would make it easier to run the script, so I recommend doing it. 
