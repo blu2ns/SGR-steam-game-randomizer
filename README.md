@@ -21,7 +21,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
    * Clone the repository: ```git clone https://github.com/blu2ns/SGR-steam-game-randomizer.git ```
      
    * Make sure python & pip are installed.
-      * Windows: ```winget install Python.Python.3```
+      * Windows: ```winget install -e --id Python.Python.3.13``` (then close and reopen the terminal)
       * Arch Linux: ```sudo pacman -S python python-pip```
       * Ubuntu/Debian Linux: ```sudo apt install python3 python3-pip```
         
