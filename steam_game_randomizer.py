@@ -313,7 +313,7 @@ def get_games(file_path,api_key,user_id):
                 exit()
 
             print("API Key and User ID found.\nMaking API request...")
-            url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1"
+            url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1&skip_unvetted_apps=false"
             response = requests.get(url)
 
             print(f"Got response with status code {response.status_code}.")
