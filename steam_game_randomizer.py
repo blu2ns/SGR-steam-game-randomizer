@@ -28,34 +28,7 @@ def main():
     while 1:
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
         
-        img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
-        #print(img_path)
-        if os.path.exists(img_path) != True:
-            print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
-
-            try:
-                url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/library_hero.jpg"
-                response = requests.get(url)
-
-                if response.status_code != 200:
-                    url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg"
-                    response = requests.get(url)    
-
-                with open(img_path, "wb") as f:
-                    f.write(response.content)
-                clear_terminal()
-                
-            except:
-                print("Game image not found.")
-
-        try: 
-            print("-" * 80,'\n') 
-            image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
-            print(image)
-        except:
-            print("Game image not found.")
-
-        print("-" * 80)
+        print_game_image(file_path,app_id,img_path,title)
 
         if last_played != 0:
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
@@ -151,7 +124,6 @@ def main():
                         try:
                             pool_choice = choice[0]
                             number_choice = int(choice[1:len(choice)])
-                            print(pool_choice, number_choice)
                         except:
                             clear_terminal()
                             print("Invalid Input. Try again later.")
@@ -188,9 +160,9 @@ def main():
 
                                     for game in range(len(temporarily_excluded_split)):
                                         temporarily_excluded = '|'.join(temporarily_excluded_split)
-
+                                    clear_terminal()
                                     print(f"{removed_title} removed.")
-
+                                    time.sleep(1)
                                 else: print("No game located at that position.")
                             else: 
                                 permanently_excluded_split = permanently_excluded.split('|')
@@ -207,9 +179,9 @@ def main():
                                             "permanently_excluded": f"{permanently_excluded}"
                                         }
                                         json.dump(data,file,indent=4)
-
+                                    clear_terminal()
                                     print(f"{removed_title} removed.")
-
+                                    time.sleep(1)
                                 else: print("No game located at that position.")
                         except Exception as e:
                             print(f"No game located at that position. {e}")
@@ -231,6 +203,42 @@ def main():
 
         elif choice.lower() == 'e': #exit
             exit()
+
+def print_game_image(file_path,app_id,img_path,title):
+
+    img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
+    #print(img_path)
+    if os.path.exists(img_path) != True:
+        print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
+
+        try:
+            url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/library_hero.jpg"
+            response = requests.get(url)
+
+            if response.status_code != 200:
+                url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg"
+                response = requests.get(url)    
+
+            with open(img_path, "wb") as f:
+                f.write(response.content)
+            clear_terminal()
+            
+        except:
+            print("Game image not found.")
+
+    try: 
+        print("-" * 80,'\n') 
+        image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
+        rows = image.split('\n')
+
+        for index, row in enumerate(rows):
+            print(f'{row}')
+            if index >= 11: break
+        print()
+    except:
+        print("Game image not found.")
+
+    print("-" * 80)
 
 def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all):
     parse_game_data(file_path,permanently_excluded)
@@ -359,7 +367,7 @@ def create_storage_files():
 
         if choice.lower() == 'y':
             print(f"Closing the program during this file creation process could lead to issues when running the program later on.\nIf so, delete the files manually at {file_path} and try again.")
-            time.sleep(3)
+            sleep(3)
             input("[Enter] Continue\n")
             clear_terminal()
 
