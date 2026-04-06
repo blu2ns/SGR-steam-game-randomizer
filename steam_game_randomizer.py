@@ -326,7 +326,7 @@ def get_games(file_path,api_key,user_id):
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
                 json.dump(game_data, game_file, indent=4)
             print(f"Game list successfully refreshed and cached.")
-            time.sleep(2)
+            time.sleep(0.5)
 
         except Exception as e:
             print(f"Error: {e}")
