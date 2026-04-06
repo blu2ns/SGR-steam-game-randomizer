@@ -38,7 +38,7 @@ def main():
         print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}")
         print("-" * 80)
 
-        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit    ")
+        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [S] View On Steam")
         choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
@@ -49,6 +49,11 @@ def main():
             except Exception as e:
                 print(f"Unable to run game with error {e}.")
         
+        elif choice.lower() == 's': #see game page in desktop app:
+            try:
+                subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
+            except Exception as e:
+                print(f"Unable to open game page with error {e}.")
         elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
             
@@ -77,6 +82,7 @@ def main():
                         print(f"Error {e}.")
                         input()
             time.sleep(1)
+        
         elif choice.lower() == 'z': #exclude game temporarily
             clear_terminal()
             print(f"{title} excluded temporarily.")
