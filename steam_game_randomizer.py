@@ -248,14 +248,13 @@ def print_game_image(file_path,app_id,img_path,title):
 
 def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all):
     parse_game_data(file_path,permanently_excluded)
-
+    images_added = 0
     for game in range(len(all_game_details)):
         title = all_game_details[game][0]
         id = all_game_details[game][3]
         img_path = os.path.join(str(file_path), "images", f"{id}.jpg")
         if refresh_all == False and os.path.exists(img_path) == True:
             print(f"Image already exists for {title}. Skipping.")
-            time.sleep(0.01)
             clear_terminal()
             continue
         try:
@@ -272,10 +271,11 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
                 f.write(response.content)
             clear_terminal()
             print(f"Image found for {title}. [{game + 1}/{len(all_game_details)}]")
+            images_added += 1
         except:
             print(f"Game image and backup game image for {title} not found.")
 
-    input("Game images successfully cached. [Enter] Continue\n")
+    input(f"{images_added} new images successfully cached. [Enter] Continue\n")
 
 def parse_game_data(file_path,permanently_excluded):
     try:
