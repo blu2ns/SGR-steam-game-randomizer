@@ -26,7 +26,7 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
-        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
+        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
         
         print_game_image(file_path,app_id,img_path,title)
 
@@ -37,7 +37,8 @@ def main():
 
         print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}")
         print("-" * 80)
-
+        print(f'Developed by: {', '.join(developers)}\nPublished By: {', '.join(publishers)}\nGenres: {', '.join(genres)}\nRelease Date: {release_date}')
+        print("-" * 80)
         print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [S] View On Steam")
         choice = input("Choice: ")
         if_go_back = False
@@ -306,9 +307,9 @@ def parse_game_data(file_path,permanently_excluded):
     return permanently_excluded_split, all_game_details,game_num
 
 def get_games(file_path,api_key,user_id):
-    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. (required for first ever program run) [Other] Continue without refresh.\n")
+    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details [Other] Continue without refresh.\n")
     
-    if choice.lower() == 'y' or choice.lower() == 'ydebug':
+    if choice.lower() == 'y' or choice.lower() == 'ydebug' or choice.lower() == 'yd':
         try:
             clear_terminal()
 
@@ -335,10 +336,45 @@ def get_games(file_path,api_key,user_id):
             if choice.lower() == 'ydebug':
                 print(json.dumps(response.json(), indent=4))
                 input("[Enter] Continue")
-
+            
+            game_num = 0
             game_data = response.json()
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
                 json.dump(game_data, game_file, indent=4)
+                game_num = game_data['response']['game_count']
+            appid = 0
+            store_details = {}
+            if choice.lower() == 'yd':
+                for game in range(game_num):
+                    try:
+                        app_id = game_data['response']['games'][game]['appid']
+                        print(f"Getting game store page data for {app_id}")
+                        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+                        response = requests.get(url)
+                        data = response.json()
+                        price_overview = data[str(app_id)]['data'].get('price_overview', {})
+                        relevant_data = {
+                            'success':    data[str(app_id)]['success'],
+                            'developers': data[str(app_id)]['data'].get('developers', 'N/A'),
+                            'publishers': data[str(app_id)]['data'].get('publishers', 'N/A'),
+                            'platforms':  data[str(app_id)]['data'].get('platforms', 'N/A'),
+                            'genres':     data[str(app_id)]['data'].get('genres', 'N/A'),
+                            'release_date': data[str(app_id)]['data'].get('release_date', {}).get('date', 'N/A'),
+                        }
+                        clear_terminal()
+                        if data[str(app_id)]['success'] == False:
+                            raise ValueError(f"Unable to get game store page data for {app_id}")
+                        store_details[app_id] = relevant_data
+                        
+                    except Exception as e:
+                        print(f"Failed with error {e}. Skipping.")
+                        input()
+                try:
+                    with open(f'{file_path}game_store_data.json', 'w') as game_file:
+                        json.dump(store_details, game_file, indent=4)
+                    print("Game Store data successfully stored.")
+                except:
+                    print(f"Error Occurred. {e}")
             print(f"Game list successfully refreshed and cached.")
             time.sleep(0.5)
 
@@ -471,9 +507,22 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             playtime = f"{hours} hr{'s' if hours > 1 else ''}, {minutes} min"
     else:
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
+    developers = []; publishers = []; platforms = []; genres = []; release_date = None
+    try:
+        with open(f'{file_path}game_store_data.json','r') as file:
+            data = json.load(file)
+            for i in range(len(data[str(app_id)]['developers'])): 
+                developers.append(data[str(app_id)]['developers'][i])
+            for i in range(len(data[str(app_id)]['publishers'])): 
+                publishers.append(data[str(app_id)]['publishers'][i])
+            genres = [item['description'] for item in data[str(app_id)]['genres']]
+            release_date = data[str(app_id)]['release_date']
+    except Exception as e:
+        print({e})
+        input()
 
-    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games
-
+    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date
+        
 if __name__ == "__main__":
     try:
         main()
