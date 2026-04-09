@@ -1,4 +1,4 @@
-import requests,os,json,random,time,subprocess,climage,datetime
+import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
@@ -26,19 +26,25 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
-        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
+        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
         
         print_game_image(file_path,app_id,img_path,title)
 
+        
+
+        print("-" * 80)
         if last_played != 0:
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
         else:
             last_played = "Never played."
-
-        print(f"{title}\nPlaytime: {playtime}\nLast Played: {last_played}")
+        
+        print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
         print("-" * 80)
-        print(f'Developed by: {', '.join(developers)}\nPublished By: {', '.join(publishers)}\nGenres: {', '.join(genres)}\nRelease Date: {release_date}')
+        print(f'Developed by: {', '.join(developers) if developers else 'N/A'}\nPublished By: {', '.join(publishers)if publishers else 'N/A'}\nGenres: {', '.join(genres)if genres else 'N/A'}\nRelease Date: {release_date if release_date else 'N/A'}')
         print("-" * 80)
+        if short_description != '':
+            print(textwrap.fill(short_description, width=80))
+            print("-" * 80)
         print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [S] View On Steam")
         choice = input("Choice: ")
         if_go_back = False
@@ -245,8 +251,6 @@ def print_game_image(file_path,app_id,img_path,title):
     except:
         print("Game image not found.")
 
-    print("-" * 80)
-
 def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all):
     parse_game_data(file_path,permanently_excluded)
     images_added = 0
@@ -353,9 +357,11 @@ def get_games(file_path,api_key,user_id):
                         url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
                         response = requests.get(url)
                         data = response.json()
+                        #print(json.dumps(response.json(), indent=4))
                         price_overview = data[str(app_id)]['data'].get('price_overview', {})
                         relevant_data = {
                             'success':    data[str(app_id)]['success'],
+                            'short_description': data[str(app_id)]['data'].get('short_description', 'N/A'),
                             'developers': data[str(app_id)]['data'].get('developers', 'N/A'),
                             'publishers': data[str(app_id)]['data'].get('publishers', 'N/A'),
                             'platforms':  data[str(app_id)]['data'].get('platforms', 'N/A'),
@@ -508,7 +514,7 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             playtime = f"{hours} hr{'s' if hours > 1 else ''}, {minutes} min"
     else:
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
-    developers = []; publishers = []; platforms = []; genres = []; release_date = None
+    developers = []; publishers = []; platforms = []; genres = []; release_date = None; short_description = ''
     try:
         with open(f'{file_path}game_store_data.json','r') as file:
             data = json.load(file)
@@ -518,11 +524,11 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
                 publishers.append(data[str(app_id)]['publishers'][i])
             genres = [item['description'] for item in data[str(app_id)]['genres']]
             release_date = data[str(app_id)]['release_date']
+            short_description = data[str(app_id)]['short_description']
     except Exception as e:
-        print({e})
-        input()
+        pass
 
-    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date
+    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date,short_description
         
 if __name__ == "__main__":
     try:
