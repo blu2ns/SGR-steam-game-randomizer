@@ -347,6 +347,7 @@ def get_games(file_path,api_key,user_id):
             if choice.lower() == 'yd':
                 for game in range(game_num):
                     try:
+                        # get this to show the game name not just ID
                         app_id = game_data['response']['games'][game]['appid']
                         print(f"Getting game store page data for {app_id}")
                         url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
@@ -409,7 +410,7 @@ def create_storage_files():
 
         if choice.lower() == 'y':
             print(f"Closing the program during this file creation process could lead to issues when running the program later on.\nIf so, delete the files manually at {file_path} and try again.")
-            sleep(3)
+            time.sleep(3)
             input("[Enter] Continue\n")
             clear_terminal()
 
