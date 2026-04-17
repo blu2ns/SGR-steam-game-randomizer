@@ -27,7 +27,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
         
    * Install dependencies with ```cd path/to/SGR-steam-game-randomizer``` then ``` pip install -r requirements.txt ``` (for some linux distros you might need to add ```--break-system-packages```)
      
-   * Run the program, it will automatically prompt you to create the necessary files it needs. On windows I believe you must run it through the terminal.
+   * Run the program, it will automatically prompt you to create the necessary files it needs.
       * Windows: ```python path/to/steam_game_randomizer.py```
       * Linux: ```python3 path/to/steam_game_randomizer.py```
      
@@ -50,7 +50,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
 
   * Once that has been completed, the program should be ready to run! Follow the onscreen prompts when using it.
   
-  * The first time the program is run, make sure to input Y when it asks to refresh the game list. I also recommend having the program get each game's image when it prompts you as well.
+  * The first time the program is run, make sure to input Y or YD when it asks to refresh the game list. (YD gets game store page data but takes a while and may get rate limited) I also recommend having the program get each game's image when it prompts you as well.
     
 * For linux users: I recommend creating a .desktop entry with the path to the script, it makes it easier to find and run.
   
