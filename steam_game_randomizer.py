@@ -31,9 +31,8 @@ def main():
     while 1:
         
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
-        
         if show_images == True: print_game_image(file_path,app_id,img_path,title)
-        else: print("-" * 80,'\n')
+        #else: print("-" * 80,'\n')
         
         print("-" * 80)
         if last_played != 0:
@@ -43,7 +42,7 @@ def main():
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
         
-        if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-  -" * 20)
+        #if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-  -" * 20)
         print(show_images, show_developer,show_publisher,show_genres,show_release_date,show_description)
         if show_developer == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
         if show_publisher == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
@@ -437,7 +436,7 @@ def create_storage_files():
             #implement later, not overwriting existing files if some exist but others don't
             #if os.path.exists(f'{file_path}exclusion_list.json') == True: choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No")
             #if os.path.exists(f'{file_path}exclusion_list.json') == False: or choice.lower == 'y':
-            print(f"Creating game exlusion storage file at {file_path}exclusion_list.json.")
+            print(f"Creating game exclusion storage file at {file_path}exclusion_list.json.")
             time.sleep(3)
             clear_terminal()
             with open(f'{file_path}exclusion_list.json', 'w') as file: 
@@ -474,12 +473,12 @@ def create_storage_files():
                 print(f"Creating settings file at {file_path}settings.json")
                 with open(f'{file_path}settings.json', 'w') as file: 
                     data = {
-                        "show_images": "True",
-                        "show_developer": "True",
-                        "show_publisher": "True",
-                        "show_genres": "True",
-                        "show_release_date": "True",
-                        "show_description": "True",
+                        "show_images": True,
+                        "show_developer": True,
+                        "show_publisher": True,
+                        "show_genres": True,
+                        "show_release_date": True,
+                        "show_description": True,
                     }
                     json.dump(data,file,indent=4)
         else:
