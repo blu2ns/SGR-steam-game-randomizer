@@ -13,8 +13,8 @@ def main():
         permanently_excluded = exclusion_data['permanently_excluded']
         temporarily_excluded = ""
 
-    show_images = True; show_developer = True; show_publisher = True; show_genres = True; show_release_date = True; show_description = True
-    show_images, show_developer,show_publisher,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developer,show_publisher,show_genres,show_release_date,show_description)    
+    show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
+    show_images, show_developers,show_publishers,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description)    
 
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
@@ -44,7 +44,7 @@ def main():
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
         
-        if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-" * 80)
+        if show_developers == True or show_publishers == True or show_genres == True or show_release_date == True: print("-" * 80)
 
         if len(developers) > 1:
             developers = [developers[0],developers[1]]
@@ -53,10 +53,11 @@ def main():
         if len(genres) > 2:
             genres = [genres[0],genres[1],genres[2]]
 
-        if show_developer == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
-        if show_publisher == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
+        if show_developers == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
+        if show_publishers == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
         if show_genres == True: print(f'Genres: {', '.join(genres) if genres else 'N/A'}')
         if show_release_date == True: print(f'Release Date: {release_date if release_date else 'N/A'}')
+        
         if show_description == True:
             print("-" * 80)
             if short_description != '':
@@ -234,7 +235,7 @@ def main():
             reroll_queue = True
 
         elif choice.lower() == 's': #view settings
-            settings.view_settings(file_path)
+            show_images,show_developers,show_publishers,show_genres,show_release_date,show_description = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description)
 
         elif choice.lower() == 'e': #exit
             exit()
@@ -487,11 +488,11 @@ def create_storage_files():
             with open(f'{file_path}settings.json', 'w') as file: 
                 data = {
                     "show_images": True,
-                    "show_developer": True,
-                    "show_publisher": True,
+                    "show_developers": True,
+                    "show_publishers": True,
                     "show_genres": True,
                     "show_release_date": True,
-                    "show_description": True,
+                    "show_description": True
                 }
                 json.dump(data,file,indent=4)
             print(f"Created settings file at {file_path}settings.json")
@@ -575,30 +576,61 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
     return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date,short_description
 
 class settings: 
-    def view_settings(file_path):
+    def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         if os.path.exists(f'{file_path}settings.json') == True: 
-            with open(f'{file_path}settings.json', 'r') as file: 
-                pass
+            clear_terminal()
+            print(f"{'-'*6}   Settings   {'-'*6}")
+            
+            setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description]]
+            for setting in range(len(setting_list)):
+                print(f'{setting}) {setting_list[setting][0]}: {settings.bool_to_symbol(setting_list[setting][1])}')
 
-    def load_settings(file_path,show_images, show_developer,show_publisher,show_genres,show_release_date,show_description):
+            choice = int(input(f"[1-{len(setting_list)}] Toggle Setting [ENTER] Return\n"))
+            if -1 < choice <= len(setting_list):
+                try:
+                    setting_list[choice][1] = not setting_list[choice][1]
+
+                    with open(f'{file_path}settings.json', 'w') as file: 
+                        data = {
+                            "show_images": setting_list[0][1],
+                            "show_developers": setting_list[1][1],
+                            "show_publishers": setting_list[2][1],
+                            "show_genres": setting_list[3][1],
+                            "show_release_date": setting_list[4][1],
+                            "show_description": setting_list[5][1]
+                        }
+                        json.dump(data,file,indent=4)   
+
+                    clear_terminal()
+                    print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
+                    time.sleep(1)
+                    
+                except Exception as e:
+                    print(f"Unable to save settings with error {e}.")
+                    input()
+                
+            return setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1]
+    def load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         try:
             if os.path.exists(f'{file_path}settings.json') == True: 
                 with open(f'{file_path}settings.json', 'r') as settings_file: 
                     settings_data = json.load(settings_file) 
                     show_images = settings_data['show_images']
                     
-                    show_developer = settings_data['show_developer']
-                    show_publisher = settings_data['show_publisher']
+                    show_developers = settings_data['show_developers']
+                    show_publishers = settings_data['show_publishers']
                     show_genres = settings_data['show_genres']
                     show_release_date = settings_data['show_release_date']
                     show_description = settings_data['show_description']
-                    return show_images,show_developer,show_publisher,show_genres,show_release_date,show_description
+                    return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
             else:
                 print("Settings file does not exist. Using default values.")
-                return show_images,show_developer,show_publisher,show_genres,show_release_date,show_description
+                return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
         except Exception as e:
             print(f"Unable to load settings with error {e}")
             
+    def bool_to_symbol(bool): return '✓' if bool else '✗'
+
 if __name__ == "__main__":
     try:
         main()
