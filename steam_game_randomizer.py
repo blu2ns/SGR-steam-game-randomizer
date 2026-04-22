@@ -39,11 +39,20 @@ def main():
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
         else:
             last_played = "Never played."
+        if len(title) > 29:
+            title = title[0:29]+'..'
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
         
-        #if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-  -" * 20)
-        print(show_images, show_developer,show_publisher,show_genres,show_release_date,show_description)
+        if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-" * 80)
+
+        if len(developers) > 1:
+            developers = [developers[0],developers[1]]
+        if len(publishers) > 1:
+            publishers = [publishers[0],publishers[1]]
+        if len(genres) > 2:
+            genres = [genres[0],genres[1],genres[2]]
+
         if show_developer == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
         if show_publisher == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
         if show_genres == True: print(f'Genres: {', '.join(genres) if genres else 'N/A'}')
@@ -400,6 +409,7 @@ def get_games(file_path,api_key,user_id):
 
         except Exception as e:
             print(f"Error: {e}")
+            print("Make sure stored API Key and User ID is correct and try again.")
             input("[Enter] Continue")
     
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
@@ -428,59 +438,65 @@ def create_storage_files():
         clear_terminal()
 
         if choice.lower() == 'y':
-            print(f"Closing the program during this file creation process could lead to issues when running the program later on.\nIf so, delete the files manually at {file_path} and try again.")
-            time.sleep(3)
-            input("[Enter] Continue\n")
-            clear_terminal()
 
             #implement later, not overwriting existing files if some exist but others don't
             #if os.path.exists(f'{file_path}exclusion_list.json') == True: choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No")
             #if os.path.exists(f'{file_path}exclusion_list.json') == False: or choice.lower == 'y':
-            print(f"Creating game exclusion storage file at {file_path}exclusion_list.json.")
-            time.sleep(3)
-            clear_terminal()
+
             with open(f'{file_path}exclusion_list.json', 'w') as file: 
                 data = {
                     "permanently_excluded": ""
                 }
                 json.dump(data,file,indent=4)
 
-            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page.\n")
+            print(f"Created game exclusion storage file at {file_path}exclusion_list.json.")
+            time.sleep(2.5)
+
+            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page or in the README.\n")
             clear_terminal()
             print("API key added.")
-            time.sleep(1)
+            time.sleep(2)
             clear_terminal()
-            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page.\n")
+
+            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page or in the README.\n")
             clear_terminal()
             print("User ID added.")
-            time.sleep(1)
-            print(f"Storing credentials at {file_path}keyids.json.")
+            time.sleep(2)
+            clear_terminal()
+
+            
             with open(f'{file_path}keyids.json', 'w') as file: 
                 data = {
                     "api_key": f"{api_key}",
                     "user_id": f"{user_id}"
                 }
                 json.dump(data,file,indent=4)
-            time.sleep(3)
+            print(f"Stored credentials at {file_path}keyids.json.")
+            time.sleep(2.5)
             clear_terminal()
-            print(f"Creating empty storage file at {file_path}last_game_data.json.")
-            time.sleep(3)
-            clear_terminal()
+
             with open(f'{file_path}last_game_data.json', 'w') as file: 
                 data = {}
                 json.dump(data,file,indent=4)
-            if os.path.exists(f'{file_path}settings.json') == False: 
-                print(f"Creating settings file at {file_path}settings.json")
-                with open(f'{file_path}settings.json', 'w') as file: 
-                    data = {
-                        "show_images": True,
-                        "show_developer": True,
-                        "show_publisher": True,
-                        "show_genres": True,
-                        "show_release_date": True,
-                        "show_description": True,
-                    }
-                    json.dump(data,file,indent=4)
+            print(f"Created empty storage file at {file_path}last_game_data.json.")
+            time.sleep(2.5)
+            clear_terminal()
+
+            #if os.path.exists(f'{file_path}settings.json') == False: 
+            
+            with open(f'{file_path}settings.json', 'w') as file: 
+                data = {
+                    "show_images": True,
+                    "show_developer": True,
+                    "show_publisher": True,
+                    "show_genres": True,
+                    "show_release_date": True,
+                    "show_description": True,
+                }
+                json.dump(data,file,indent=4)
+            print(f"Created settings file at {file_path}settings.json")
+            time.sleep(2.5)
+            clear_terminal()
         else:
             exit()
     
