@@ -5,3 +5,4 @@ storage/keyids.json
 TODO.txt
 playtime.py
 storage/game_store_data.json
+storage/settings.json
