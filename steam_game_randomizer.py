@@ -12,7 +12,10 @@ def main():
         exclusion_data = json.load(exclusion_file) 
         permanently_excluded = exclusion_data['permanently_excluded']
         temporarily_excluded = ""
-        
+
+    show_images = True; show_developer = True; show_publisher = True; show_genres = True; show_release_date = True; show_description = True
+    show_images, show_developer,show_publisher,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developer,show_publisher,show_genres,show_release_date,show_description)    
+
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
@@ -26,9 +29,12 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
+        
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
-        print_game_image(file_path,app_id,img_path,title)
-
+        
+        if show_images == True: print_game_image(file_path,app_id,img_path,title)
+        else: print("-" * 80,'\n')
+        
         print("-" * 80)
         if last_played != 0:
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
@@ -36,13 +42,20 @@ def main():
             last_played = "Never played."
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
-        print("-  -" * 20)
-        print(f'Developed by: {', '.join(developers) if developers else 'N/A'}\nPublished By: {', '.join(publishers)if publishers else 'N/A'}\nGenres: {', '.join(genres)if genres else 'N/A'}\nRelease Date: {release_date if release_date else 'N/A'}')
-        print("-" * 80)
-        if short_description != '':
-            print(textwrap.fill(short_description, width=80))
+        
+        if show_developer == True or show_publisher == True or show_genres == True or show_release_date == True: print("-  -" * 20)
+        print(show_images, show_developer,show_publisher,show_genres,show_release_date,show_description)
+        if show_developer == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
+        if show_publisher == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
+        if show_genres == True: print(f'Genres: {', '.join(genres) if genres else 'N/A'}')
+        if show_release_date == True: print(f'Release Date: {release_date if release_date else 'N/A'}')
+        if show_description == True:
             print("-" * 80)
-        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [V] View On Steam")
+            if short_description != '':
+                print(textwrap.fill(short_description, width=80))
+                
+        print("-" * 80)
+        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [V] View On Steam\n[S] Settings")
         choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
@@ -211,6 +224,9 @@ def main():
 
         elif choice.lower() == 'r': #reroll the roll queue
             reroll_queue = True
+
+        elif choice.lower() == 's': #view settings
+            settings.view_settings(file_path)
 
         elif choice.lower() == 'e': #exit
             exit()
@@ -406,8 +422,8 @@ def create_storage_files():
         os.mkdir(img_path)
     except Exception as e:
         img_path = os.path.join(str(file_path), "images", "")
-
-    if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False:
+    
+    if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False:
         
         choice = input("One or more storage files not found. [Y] Create Files [Other] Close Program\n")
         clear_terminal()
@@ -418,6 +434,9 @@ def create_storage_files():
             input("[Enter] Continue\n")
             clear_terminal()
 
+            #implement later, not overwriting existing files if some exist but others don't
+            #if os.path.exists(f'{file_path}exclusion_list.json') == True: choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No")
+            #if os.path.exists(f'{file_path}exclusion_list.json') == False: or choice.lower == 'y':
             print(f"Creating game exlusion storage file at {file_path}exclusion_list.json.")
             time.sleep(3)
             clear_terminal()
@@ -451,9 +470,21 @@ def create_storage_files():
             with open(f'{file_path}last_game_data.json', 'w') as file: 
                 data = {}
                 json.dump(data,file,indent=4)
-            
+            if os.path.exists(f'{file_path}settings.json') == False: 
+                print(f"Creating settings file at {file_path}settings.json")
+                with open(f'{file_path}settings.json', 'w') as file: 
+                    data = {
+                        "show_images": "True",
+                        "show_developer": "True",
+                        "show_publisher": "True",
+                        "show_genres": "True",
+                        "show_release_date": "True",
+                        "show_description": "True",
+                    }
+                    json.dump(data,file,indent=4)
         else:
             exit()
+    
     return file_path,img_path
 
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path):
@@ -527,7 +558,32 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
         pass
 
     return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date,short_description
-        
+
+class settings: 
+    def view_settings(file_path):
+        if os.path.exists(f'{file_path}settings.json') == True: 
+            with open(f'{file_path}settings.json', 'r') as file: 
+                pass
+
+    def load_settings(file_path,show_images, show_developer,show_publisher,show_genres,show_release_date,show_description):
+        try:
+            if os.path.exists(f'{file_path}settings.json') == True: 
+                with open(f'{file_path}settings.json', 'r') as settings_file: 
+                    settings_data = json.load(settings_file) 
+                    show_images = settings_data['show_images']
+                    
+                    show_developer = settings_data['show_developer']
+                    show_publisher = settings_data['show_publisher']
+                    show_genres = settings_data['show_genres']
+                    show_release_date = settings_data['show_release_date']
+                    show_description = settings_data['show_description']
+                    return show_images,show_developer,show_publisher,show_genres,show_release_date,show_description
+            else:
+                print("Settings file does not exist. Using default values.")
+                return show_images,show_developer,show_publisher,show_genres,show_release_date,show_description
+        except Exception as e:
+            print(f"Unable to load settings with error {e}")
+            
 if __name__ == "__main__":
     try:
         main()
