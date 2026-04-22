@@ -27,10 +27,7 @@ def main():
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
-        
         print_game_image(file_path,app_id,img_path,title)
-
-        
 
         print("-" * 80)
         if last_played != 0:
@@ -85,7 +82,7 @@ def main():
                         if all_game_details[game][0] == title:
                             all_game_details.pop(game)
                             break
-                    except:
+                    except Exception as e:
                         print(f"Error {e}.")
                         input()
             time.sleep(1)
@@ -104,7 +101,7 @@ def main():
                     if all_game_details[game][0] == title:
                         all_game_details.pop(game)
                         break
-                except:
+                except Exception as e:
                     print(f"Error {e}.")
                     input()
             time.sleep(1)
@@ -237,7 +234,7 @@ def print_game_image(file_path,app_id,img_path,title):
             clear_terminal()
             
         except:
-            print("Game image not found.")
+            pass
 
     try: 
         print("-" * 80,'\n') 
@@ -380,7 +377,7 @@ def get_games(file_path,api_key,user_id):
                     with open(f'{file_path}game_store_data.json', 'w') as game_file:
                         json.dump(store_details, game_file, indent=4)
                     print("Game Store data successfully stored.")
-                except:
+                except Exception as e:
                     print(f"Error Occurred. {e}")
             print(f"Game list successfully refreshed and cached.")
             time.sleep(0.5)
@@ -407,7 +404,7 @@ def create_storage_files():
         img_path = os.path.join(str(file_path), "images", "")
         os.mkdir(img_path)
     except Exception as e:
-        pass
+        img_path = os.path.join(str(file_path), "images", "")
 
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False:
         
