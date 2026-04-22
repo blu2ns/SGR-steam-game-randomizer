@@ -584,8 +584,9 @@ class settings:
             setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description]]
             for setting in range(len(setting_list)):
                 print(f'{setting}) {setting_list[setting][0]}: {settings.bool_to_symbol(setting_list[setting][1])}')
-
-            choice = int(input(f"[1-{len(setting_list)}] Toggle Setting [ENTER] Return\n"))
+            choice = None
+            try: choice = int(input(f"[1-{len(setting_list)}] Toggle Setting [ENTER] Return\n"))
+            except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
             if -1 < choice <= len(setting_list):
                 try:
                     setting_list[choice][1] = not setting_list[choice][1]
