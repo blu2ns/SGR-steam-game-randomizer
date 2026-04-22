@@ -31,7 +31,6 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
       * Windows: ```python path/to/steam_game_randomizer.py```
       * Linux: ```python3 path/to/steam_game_randomizer.py```
 
-   * The first time the program is run, make sure to input Y (just get game list) or YD when it asks to refresh the game list. (YD gets game store page data to dislay as well as your game list but takes a while and may get rate limited) I also recommend having the program get each game's image when it prompts you as well.
    * The program will prompt you to input an API key and User ID. Input them when requested. Follow the instructions below if you need help with the API Key or User ID.
        
      * How to find your user ID:
@@ -49,6 +48,8 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
           
      When you have those credentials, paste them into the program when it asks.
 
+   * The first time the program is run, make sure to input Y (just get game list) or YD when it asks to refresh the game list. (YD gets game store page data to dislay as well as your game list but takes a while and may get rate limited) I also recommend having the program get each game's image when it prompts you as well.
+     
   * Once that has been completed, the program should be ready to run! Follow the onscreen prompts when using it.
 
 For easier use:
