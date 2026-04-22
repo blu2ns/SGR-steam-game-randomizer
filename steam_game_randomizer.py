@@ -36,13 +36,13 @@ def main():
             last_played = "Never played."
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
-        print("-" * 80)
+        print("-  -" * 20)
         print(f'Developed by: {', '.join(developers) if developers else 'N/A'}\nPublished By: {', '.join(publishers)if publishers else 'N/A'}\nGenres: {', '.join(genres)if genres else 'N/A'}\nRelease Date: {release_date if release_date else 'N/A'}')
         print("-" * 80)
         if short_description != '':
             print(textwrap.fill(short_description, width=80))
             print("-" * 80)
-        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [S] View On Steam")
+        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [V] View On Steam")
         choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
@@ -53,11 +53,12 @@ def main():
             except Exception as e:
                 print(f"Unable to run game with error {e}.")
         
-        elif choice.lower() == 's': #see game page in desktop app:
+        elif choice.lower() == 'v': #see game page in desktop app:
             try:
                 subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
             except Exception as e:
                 print(f"Unable to open game page with error {e}.")
+        
         elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
             
