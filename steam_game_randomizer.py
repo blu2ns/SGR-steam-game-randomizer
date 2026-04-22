@@ -39,8 +39,8 @@ def main():
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
         else:
             last_played = "Never played."
-        if len(title) > 29:
-            title = title[0:29]+'..'
+        if len(title) > 80:
+            title = title[0:78]+'..'         
         
         print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
         
@@ -62,9 +62,14 @@ def main():
             print("-" * 80)
             if short_description != '':
                 print(textwrap.fill(short_description, width=80))
-                
-        print("-" * 80)
-        print(f"[ENTER] Reroll   [R] Reroll Queue   [RUN] Launch {title}\n[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session\n[B] Go Back      [E] Exit           [V] View On Steam\n[S] Settings")
+        if len(title) > 65:
+            title = title[0:65]+'..'        
+
+        print(f'''{"-" * 80}
+[ENTER] Reroll   [R] Reroll Queue   [V] View On Steam
+[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session
+[B] Go Back      [S] Settings       [E] Exit
+[RUN] Launch {title}''')
         choice = input("Choice: ")
         if_go_back = False
         reroll_queue = False
