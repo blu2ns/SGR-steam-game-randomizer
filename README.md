@@ -56,19 +56,19 @@ For easier use:
    * Create a .desktop file at ```~/.local/share/applications```
    * My file looks like:
    ```
-        [Desktop Entry]
-        Version=1.0
-        Type=Application
-        Name=SGR (Steam Game Randomizer)
-        Exec=python3 /path/to/steam_game_randomizer.py
-        Terminal=true
-        Categories=Utility;
-        Icon=/path/to/icon.png
+   [Desktop Entry]
+   Version=1.0
+   Type=Application
+   Name=SGR (Steam Game Randomizer)
+   Exec=python3 /path/to/steam_game_randomizer.py
+   Terminal=true
+   Categories=Utility;
+   Icon=/path/to/icon.png
    ```
    * If you don't have an icon you can put ```utilities-terminal``` instead of the path to your image. (there is a logo in the repo_images folder if you want to use it)
 * For windows users: You can create a batch file, similiar to the .desktop file on linux.
     * Here is a template:
     ```
-        @echo off
-        python "C:\path\to\steam_game_randomizer.py"
+    @echo off
+    python "C:\path\to\steam_game_randomizer.py"
     ```
