@@ -5,6 +5,7 @@ Welcome to the creatively named Steam Game Randomizer, or SGR for short.
   * Shows a random game from your steam library - reroll as many times as you want
   * Run the game directly from the randomizer instead of opening your steam library and finding the game
   * Exclude games from being shown to you
+  * Shows a bunch of information from a game, sections can be turned off if you don't want them to be shown
     
 ## Why use this over something like the steamDB game randomizer?
   * Allows you to pull your game list from the API even with your account being private (if you use the api key assigned to the user id you are using)
