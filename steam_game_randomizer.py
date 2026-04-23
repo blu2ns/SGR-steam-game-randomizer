@@ -2,10 +2,7 @@ import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
-    api_key = ""
-    user_id = ""
-    randomized_game_list = []
-    previous_games = []
+    api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
 
     file_path,img_path = create_storage_files()
     with open(f'{file_path}exclusion_list.json', 'r') as exclusion_file: 
@@ -19,8 +16,7 @@ def main():
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
-    if_go_back = False
-    reroll_queue = False
+    if_go_back = False; reroll_queue = False
 
     clear_terminal()
     choice = input("Refresh game image cache? This step is only necessary to do once. It may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
@@ -71,8 +67,8 @@ def main():
 [B] Go Back      [S] Settings       [E] Exit
 [RUN] Launch {title}''')
         choice = input("Choice: ")
-        if_go_back = False
-        reroll_queue = False
+
+        if_go_back = False; reroll_queue = False
 
         if choice.lower() == 'run': #launch game
             try:
@@ -425,25 +421,24 @@ def get_games(file_path,api_key,user_id):
         clear_terminal()
         create_keyids(file_path)
         get_games(file_path,api_key,user_id)
-def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 
 def create_storage_files():
-
     file_path = r"~/"
     file_path = Path(__file__).resolve().parent
     file_path = os.path.join(str(file_path), "storage", "")
 
     try:
         os.mkdir(file_path)
-    except:
+    except FileExistsError:
         pass
 
+    img_path = ''
+    img_path = os.path.join(str(file_path), "images", "")
+
     try:
-        img_path = ''
-        img_path = os.path.join(str(file_path), "images", "")
         os.mkdir(img_path)
-    except Exception as e:
-        img_path = os.path.join(str(file_path), "images", "")
+    except FileExistsError:
+        pass
     
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False:
         
@@ -452,42 +447,56 @@ def create_storage_files():
 
         if choice.lower() == 'y':
 
-            #implement later, not overwriting existing files if some exist but others don't
-            #if os.path.exists(f'{file_path}exclusion_list.json') == True: choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No")
-            #if os.path.exists(f'{file_path}exclusion_list.json') == False: or choice.lower == 'y':
-
-            with open(f'{file_path}exclusion_list.json', 'w') as file: 
-                data = {
-                    "permanently_excluded": ""
-                }
-                json.dump(data,file,indent=4)
-
-            print(f"Created game exclusion storage file at {file_path}exclusion_list.json.")
-            time.sleep(2.5)
-
-            create_keyids(file_path)
-
-            with open(f'{file_path}last_game_data.json', 'w') as file: 
-                data = {}
-                json.dump(data,file,indent=4)
-            print(f"Created empty storage file at {file_path}last_game_data.json.")
-            time.sleep(2.5)
+            choice = ''
+            if os.path.exists(f'{file_path}exclusion_list.json') == True: 
+                choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No\n")
+            if choice.lower() == 'y' or os.path.exists(f'{file_path}exclusion_list.json') == False:
+                with open(f'{file_path}exclusion_list.json', 'w') as file: 
+                    data = {
+                        "permanently_excluded": ""
+                    }
+                    json.dump(data,file,indent=4)
+                clear_terminal()
+                print(f"Created game exclusion storage file at {file_path}exclusion_list.json.")
+                time.sleep(2.5)
+            
+            clear_terminal()
+            choice = ''
+            if os.path.exists(f'{file_path}keyids.json') == True:
+                choice = input("Credentials file found. Recreate? [Y] Yes [Other] No\n")
+            if choice.lower() == 'y' or os.path.exists(f'{file_path}keyids.json') == False:
+                create_keyids(file_path)
+            
+            clear_terminal()
+            choice = ''
+            if os.path.exists(f'{file_path}last_game_data.json') == True:
+                choice = input("Game data file found. Recreate? [Y] Yes [Other] No\n")
+            if choice.lower() == 'y' or os.path.exists(f'{file_path}last_game_data.json') == False:
+                with open(f'{file_path}last_game_data.json', 'w') as file: 
+                    data = {}
+                    json.dump(data,file,indent=4)
+                clear_terminal()
+                print(f"Created empty storage file at {file_path}last_game_data.json.")
+                time.sleep(2.5)
             clear_terminal()
 
-            #if os.path.exists(f'{file_path}settings.json') == False: 
-            
-            with open(f'{file_path}settings.json', 'w') as file: 
-                data = {
-                    "show_images": True,
-                    "show_developers": True,
-                    "show_publishers": True,
-                    "show_genres": True,
-                    "show_release_date": True,
-                    "show_description": True
-                }
-                json.dump(data,file,indent=4)
-            print(f"Created settings file at {file_path}settings.json")
-            time.sleep(2.5)
+            choice = ''
+            if os.path.exists(f'{file_path}settings.json') == True: 
+                choice = input("Settings file found. Recreate? [Y] Yes [Other] No\n")
+            if choice.lower() == 'y' or os.path.exists(f'{file_path}settings.json') == False:
+                with open(f'{file_path}settings.json', 'w') as file: 
+                    data = {
+                        "show_images": True,
+                        "show_developers": True,
+                        "show_publishers": True,
+                        "show_genres": True,
+                        "show_release_date": True,
+                        "show_description": True
+                    }
+                    json.dump(data,file,indent=4)
+                clear_terminal()
+                print(f"Created settings file at {file_path}settings.json")
+                time.sleep(2.5)
             clear_terminal()
         else:
             exit()
@@ -496,13 +505,13 @@ def create_storage_files():
 
 def create_keyids(file_path):
     clear_terminal()
-    api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page or in the README.\n")
+    api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json,\n or running the program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
     clear_terminal()
     print("API key added.")
     time.sleep(2)
     clear_terminal()
 
-    user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page or in the README.\n")
+    user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json,\n or running the program again and following the prompt.\nA guide to finding this can be found on the github page or in the README.\n")
     clear_terminal()
     print("User ID added.")
     time.sleep(2)
@@ -515,6 +524,7 @@ def create_keyids(file_path):
             "user_id": f"{user_id}"
         }
         json.dump(data,file,indent=4)
+    clear_terminal()
     print(f"Stored credentials at {file_path}keyids.json.")
     time.sleep(2.5)
     clear_terminal()
@@ -648,6 +658,7 @@ class settings:
             
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
+def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 if __name__ == "__main__":
     try:
         main()
