@@ -2,6 +2,7 @@ import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
+    TEST THE CODE WITH THE COMMENT TEST THIS 
     api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
 
     file_path,img_path = create_storage_files()
@@ -15,7 +16,7 @@ def main():
         show_images, show_developers,show_publishers,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description)    
     except Exception as e:
         print(f"Unable to load settings with error {e}. Using default values.")
-        show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
+
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
@@ -383,7 +384,9 @@ def get_games(file_path,api_key,user_id):
                     try:
                         # get this to show the game name not just ID
                         app_id = game_data['response']['games'][game]['appid']
-                        print(f"Getting game store page data for {app_id}")
+                        game_name = game_data['response']['games'][game]['name']
+                        #TEST THIS 
+                        print(f"Getting game store page data for {game_name}")
                         url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
                         response = requests.get(url)
                         data = response.json()
