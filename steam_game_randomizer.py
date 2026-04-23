@@ -11,8 +11,11 @@ def main():
         temporarily_excluded = ""
 
     show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
-    show_images, show_developers,show_publishers,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description)    
-
+    try:
+        show_images, show_developers,show_publishers,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description)    
+    except Exception as e:
+        print(f"Unable to load settings with error {e}. Using default values.")
+        show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
@@ -649,10 +652,9 @@ class settings:
                     show_genres = settings_data['show_genres']
                     show_release_date = settings_data['show_release_date']
                     show_description = settings_data['show_description']
-                    return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
             else:
                 print("Settings file does not exist. Using default values.")
-                return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
+            return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
         except Exception as e:
             print(f"Unable to load settings with error {e}")
             
