@@ -2,7 +2,6 @@ import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
-    TEST THE CODE WITH THE COMMENT TEST THIS 
     api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
 
     file_path,img_path = create_storage_files()
@@ -23,7 +22,8 @@ def main():
     if_go_back = False; reroll_queue = False
 
     clear_terminal()
-    choice = input("Refresh game image cache? This step is only necessary to do once. It may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
+    print('-' * 80)
+    choice = input("Refresh game image cache? This step is only necessary to do once.\nIt may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
     if choice.lower() == 'r':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=True)
     elif choice.lower() == 'g':
@@ -136,7 +136,7 @@ def main():
 
         elif choice.lower() == 'c': #see list of excluded games
             clear_terminal()
-
+            print("-" * 80)
             permanently_excluded_split = permanently_excluded.split('|')
             temporarily_excluded_split = temporarily_excluded.split('|')
 
@@ -154,7 +154,7 @@ def main():
             else:
                 print("No temporarily excluded games.")
             print('')
-            choice = str(input("Input the first letter of the exclusion pool you would like to remove from, followed by the number associated with the game you would like to remove. Eg. (p2,t4), etc. \n[Clear P] Clear Permanently Excluded list. [Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
+            choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
             
             try: 
                 if choice != '':
@@ -339,7 +339,7 @@ def parse_game_data(file_path,permanently_excluded):
     return permanently_excluded_split, all_game_details,game_num
 
 def get_games(file_path,api_key,user_id):
-    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details [C] Change stored API Key and User ID [Other] Continue without refresh.\n")
+    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details \n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
     
     if choice.lower() == 'y' or choice.lower() == 'ydebug' or choice.lower() == 'yd':
         try:
@@ -382,15 +382,13 @@ def get_games(file_path,api_key,user_id):
             if choice.lower() == 'yd':
                 for game in range(game_num):
                     try:
-                        # get this to show the game name not just ID
                         app_id = game_data['response']['games'][game]['appid']
                         game_name = game_data['response']['games'][game]['name']
-                        #TEST THIS 
-                        print(f"Getting game store page data for {game_name}")
+                        print(f"Getting game store page data for {game_name}.")
                         url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
                         response = requests.get(url)
                         data = response.json()
-                        #print(json.dumps(response.json(), indent=4))
+
                         price_overview = data[str(app_id)]['data'].get('price_overview', {})
                         relevant_data = {
                             'success':    data[str(app_id)]['success'],
@@ -664,6 +662,7 @@ class settings:
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
+def printw(text): print(textwrap.fill(short_description, width=80))
 if __name__ == "__main__":
     try:
         main()
