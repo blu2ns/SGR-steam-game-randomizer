@@ -317,7 +317,7 @@ def parse_game_data(file_path,permanently_excluded):
         game_num = data['response']['game_count']
         all_game_details = []
     except Exception as e:
-        print(f'Game cache empty and/or cache file not found. Rerun the program and refresh the cache. {e}')
+        print(f'Game cache empty and/or cache file not found. Rerun the program and request the game data from the API. Error: {e}')
         time.sleep(5)
         exit()
 
