@@ -59,14 +59,14 @@ def main():
         if show_release_date == True: print(f'Release Date: {release_date if release_date else 'N/A'}')
         
         if show_description == True:
-            print("-" * 80)
             if short_description != '':
+                print("-" * 80)
                 print(textwrap.fill(short_description, width=80))
         if len(title) > 65:
             title = title[0:65]+'..'        
 
         print(f'''{"-" * 80}
-[ENTER] Reroll   [R] Reroll Queue   [V] View On Steam
+[ENTER] Reroll   [R] Reroll Queue   [V] View On Steam     [F] Filters
 [C] Exclusions   [X] Exclude Perm   [Z] Exclude Session
 [B] Go Back      [S] Settings       [E] Exit
 [RUN] Launch {title}''')
@@ -307,7 +307,7 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
             images_added += 1
         except:
             print(f"Game image and backup game image for {title} not found.")
-
+    #this sometimes has an inaccurate number
     input(f"{images_added} new images successfully cached. [Enter] Continue\n")
 
 def parse_game_data(file_path,permanently_excluded):
@@ -339,7 +339,7 @@ def parse_game_data(file_path,permanently_excluded):
     return permanently_excluded_split, all_game_details,game_num
 
 def get_games(file_path,api_key,user_id):
-    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details [Other] Continue without refresh.\n")
+    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details [C] Change stored API Key and User ID [Other] Continue without refresh.\n")
     
     if choice.lower() == 'y' or choice.lower() == 'ydebug' or choice.lower() == 'yd':
         try:
@@ -355,9 +355,12 @@ def get_games(file_path,api_key,user_id):
                 create_storage_files()
 
             if api_key == '' or user_id == '':
-                print("API Key and/or User ID not found.")
-                time.sleep(5)
-                exit()
+                choice = input("API Key and/or User ID not found. [A] Add Credentials [Other] Exit\n")
+                if choice.lower() != 'a':
+                    exit()
+                else:
+                    create_keyids(file_path)
+                    main()
 
             print("API Key and User ID found.\nMaking API request...")
             url = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={api_key}&steamid={user_id}&format=json&include_appinfo=1&include_played_free_games=1&skip_unvetted_apps=false"
@@ -418,6 +421,10 @@ def get_games(file_path,api_key,user_id):
             print("Make sure stored API Key and User ID is correct and try again.")
             input("[Enter] Continue")
     
+    if choice.lower() == 'c':
+        clear_terminal()
+        create_keyids(file_path)
+        get_games(file_path,api_key,user_id)
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 
 def create_storage_files():
@@ -458,28 +465,7 @@ def create_storage_files():
             print(f"Created game exclusion storage file at {file_path}exclusion_list.json.")
             time.sleep(2.5)
 
-            api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page or in the README.\n")
-            clear_terminal()
-            print("API key added.")
-            time.sleep(2)
-            clear_terminal()
-
-            user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page or in the README.\n")
-            clear_terminal()
-            print("User ID added.")
-            time.sleep(2)
-            clear_terminal()
-
-            
-            with open(f'{file_path}keyids.json', 'w') as file: 
-                data = {
-                    "api_key": f"{api_key}",
-                    "user_id": f"{user_id}"
-                }
-                json.dump(data,file,indent=4)
-            print(f"Stored credentials at {file_path}keyids.json.")
-            time.sleep(2.5)
-            clear_terminal()
+            create_keyids(file_path)
 
             with open(f'{file_path}last_game_data.json', 'w') as file: 
                 data = {}
@@ -507,6 +493,31 @@ def create_storage_files():
             exit()
     
     return file_path,img_path
+
+def create_keyids(file_path):
+    clear_terminal()
+    api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json.\nA guide to getting this can be found on the github page or in the README.\n")
+    clear_terminal()
+    print("API key added.")
+    time.sleep(2)
+    clear_terminal()
+
+    user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json.\nA guide to finding this can be found on the github page or in the README.\n")
+    clear_terminal()
+    print("User ID added.")
+    time.sleep(2)
+    clear_terminal()
+
+    
+    with open(f'{file_path}keyids.json', 'w') as file: 
+        data = {
+            "api_key": f"{api_key}",
+            "user_id": f"{user_id}"
+        }
+        json.dump(data,file,indent=4)
+    print(f"Stored credentials at {file_path}keyids.json.")
+    time.sleep(2.5)
+    clear_terminal()
 
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path):
 
@@ -610,7 +621,7 @@ class settings:
                     clear_terminal()
                     print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
                     time.sleep(1)
-                    
+                    settings.view_settings(file_path,setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1])
                 except Exception as e:
                     print(f"Unable to save settings with error {e}.")
                     input()
