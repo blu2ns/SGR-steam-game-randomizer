@@ -557,6 +557,25 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
                     randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
                 else:
                     exit()
+        elif filter_type == "norecent":
+            try:
+                random.shuffle(all_game_details)
+                randomized_game_list = all_game_details.copy() 
+                temp_randomized_game_list = []
+                for game in range(len(randomized_game_list)):
+                    try:
+                        if int(randomized_game_list[game][5]) == 0:
+                            temp_randomized_game_list.append(randomized_game_list[game])
+                    except Exception as e:
+                        pass
+            
+                randomized_game_list = temp_randomized_game_list
+            except:
+                choice = input("No games fit criteria of current filter. Clear and try again? [Y] Yes [Other] Close Program")
+                if choice.lower() == 'y':
+                    randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
+                else:
+                    exit()
     permanently_excluded_split = permanently_excluded.split('|')
     temporarily_excluded_split = temporarily_excluded.split('|')
 
@@ -567,9 +586,11 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
         try:
             game_choice = randomized_game_list.pop(0)
             previous_games.append(game_choice)
-
+            # print(game_choice)
+            # input()
         except Exception as e:
-            choice = input(f"No games found in list. Either you're very picky or you own no steam games. [Y] Clear exclusion preferences. [Other] Close program\n {e}")
+            print('-' *80)
+            choice = input(f"No games found in list. Either you're very picky or you own no steam games.\n[Y] Clear exclusion preferences. [Other] Close program\n {e}")
             if choice.lower() == 'y':
                 permanently_excluded = ''
                 temporarily_excluded = ''
@@ -692,7 +713,7 @@ class settings:
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
 class filters:
-    current_filter = "playtime"
+    current_filter = "default"
     current_playtime_threshold = 120
 
 
