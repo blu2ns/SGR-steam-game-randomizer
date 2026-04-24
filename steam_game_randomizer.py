@@ -248,7 +248,6 @@ def main():
 def print_game_image(file_path,app_id,img_path,title):
 
     img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
-    #print(img_path)
     if os.path.exists(img_path) != True:
         print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
 
@@ -266,12 +265,11 @@ def print_game_image(file_path,app_id,img_path,title):
             
         except:
             pass
-
+    print("-" * 80) 
     try: 
-        print("-" * 80,'\n') 
         image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
         rows = image.split('\n')
-
+        print()
         for index, row in enumerate(rows):
             print(f'{row}')
             if index >= 11: break
@@ -635,7 +633,6 @@ class settings:
                     clear_terminal()
                     print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
                     time.sleep(1)
-                    settings.view_settings(file_path,setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1])
                 except Exception as e:
                     print(f"Unable to save settings with error {e}.")
                     input()
@@ -662,7 +659,7 @@ class settings:
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
-def printw(text): print(textwrap.fill(short_description, width=80))
+def printw(text): print(textwrap.fill(text, width=80))
 if __name__ == "__main__":
     try:
         main()
