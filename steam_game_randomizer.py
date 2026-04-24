@@ -531,7 +531,7 @@ def create_keyids(file_path):
     print(f"Stored credentials at {file_path}keyids.json.")
     time.sleep(2.5)
     clear_terminal()
-#add filter for having less than _ playtime in the last 2 weeks "playtime_2weeks": 120,
+#TODO: add filter for having less than _ playtime in the last 2 weeks "playtime_2weeks": 120,
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
 
     if len(randomized_game_list) == 0 or reroll_queue == True:
@@ -539,20 +539,24 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             random.shuffle(all_game_details)
             randomized_game_list = all_game_details.copy()
         elif filter_type == "playtime":
-            random.shuffle(all_game_details)
-            randomized_game_list = all_game_details.copy() 
-            temp_randomized_game_list = []
-            for game in range(len(randomized_game_list)):
-                try:
-                    if int(randomized_game_list[game][1]) <= playtime_threshold:
-                        print(f'{randomized_game_list[game][0]} kept due to having playtime of {randomized_game_list[game][1]}, less than {playtime_threshold}.')
-                        temp_randomized_game_list.append(randomized_game_list[game])
-                    else:
-                        print(f'{randomized_game_list[game][0]} removed due to having playtime of {randomized_game_list[game][1]}, greater than {playtime_threshold}.')
-                except Exception as e:
-                    pass
-        
-            randomized_game_list = temp_randomized_game_list
+            try:
+                random.shuffle(all_game_details)
+                randomized_game_list = all_game_details.copy() 
+                temp_randomized_game_list = []
+                for game in range(len(randomized_game_list)):
+                    try:
+                        if int(randomized_game_list[game][1]) <= playtime_threshold:
+                            temp_randomized_game_list.append(randomized_game_list[game])
+                    except Exception as e:
+                        pass
+            
+                randomized_game_list = temp_randomized_game_list
+            except:
+                choice = input("No games fit criteria of current filter. Clear and try again? [Y] Yes [Other] Close Program")
+                if choice.lower() == 'y':
+                    randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
+                else:
+                    exit()
     permanently_excluded_split = permanently_excluded.split('|')
     temporarily_excluded_split = temporarily_excluded.split('|')
 
@@ -604,7 +608,7 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             playtime = f"{hours} hr{'s' if hours > 1 else ''}, {minutes} min"
     else:
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
-    #*_HR stands for human readable not human resources
+    
     playtime_2weeks_HR = playtime_2weeks
     if playtime_2weeks_HR >= 60:
         hours = playtime_2weeks_HR // 60
@@ -632,7 +636,7 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
     return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
 class settings: 
-    #TODO: add hiding playtime last two weeks, and storing filter status
+    #TODO: add hiding playtime last two weeks, and storing filter type
     def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         if os.path.exists(f'{file_path}settings.json') == True: 
             clear_terminal()
@@ -688,7 +692,6 @@ class settings:
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
 class filters:
-    #NOTE: make sure to make it return a clear filters error if it can't find any games that fit the criteria
     current_filter = "playtime"
     current_playtime_threshold = 120
 
