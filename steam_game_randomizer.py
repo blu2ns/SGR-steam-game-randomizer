@@ -29,10 +29,9 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
-        
-        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path)
+        current_filter = filters.current_filter;current_playtime_threshold = filters.current_playtime_threshold
+        title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description,playtime_2weeks,playtime_2weeks_HR = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,current_filter,current_playtime_threshold)
         if show_images == True: print_game_image(file_path,app_id,img_path,title)
-        #else: print("-" * 80,'\n')
         
         print("-" * 80)
         if last_played != 0:
@@ -42,7 +41,7 @@ def main():
         if len(title) > 80:
             title = title[0:78]+'..'         
         
-        print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}")
+        print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}\nPlaytime 2 Weeks: {playtime_2weeks_HR if playtime_2weeks_HR else '0'}")
         
         if show_developers == True or show_publishers == True or show_genres == True or show_release_date == True: print("-" * 80)
 
@@ -50,8 +49,8 @@ def main():
             developers = [developers[0],developers[1]]
         if len(publishers) > 1:
             publishers = [publishers[0],publishers[1]]
-        if len(genres) > 2:
-            genres = [genres[0],genres[1],genres[2]]
+        if len(genres) > 5:
+            genres = [genres[0],genres[1],genres[2],genres[3],genres[4]]
 
         if show_developers == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
         if show_publishers == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
@@ -175,18 +174,19 @@ def main():
                                     "permanently_excluded": f"{permanently_excluded}"
                                 }
                                 json.dump(data,file,indent=4)
-                                
-                            print("Rerolling game queue based on new exclusion list..")
-                            time.sleep(1.5)
-                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path)
-                            
+
+                            current_filter = filters.current_filter;current_playtime_threshold = filters.current_playtime_threshold
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path,current_filter,current_playtime_threshold)
+                            print("Rerolled game queue based on new exclusion list.")
+                            time.sleep(1.5)                           
                         elif choice[6] == 't':
                             temporarily_excluded = ''
                             temporarily_excluded_split = []
 
-                            print("Rerolling game queue based on new exclusion list..")
+                            current_filter = filters.current_filter;current_playtime_threshold = filters.current_playtime_threshold
+                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path,current_filter,current_playtime_threshold)
+                            print("Rerolled game queue based on new exclusion list.")
                             time.sleep(1.5)
-                            randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, True, randomized_game_list, previous_games,file_path)
                         permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)    
                     elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
                         try:
@@ -326,8 +326,9 @@ def parse_game_data(file_path,permanently_excluded):
                 data['response']['games'][game]['playtime_forever'] + data['response']['games'][game]['playtime_disconnected'],
                 data['response']['games'][game]['img_icon_url'],
                 data['response']['games'][game]['appid'],
-                data['response']['games'][game]['rtime_last_played']
-            ]
+                data['response']['games'][game]['rtime_last_played'],
+                data['response']['games'][game].get('playtime_2weeks', 0)
+            ]   
             all_game_details.append(game_details)
         except:
             break
@@ -530,13 +531,28 @@ def create_keyids(file_path):
     print(f"Stored credentials at {file_path}keyids.json.")
     time.sleep(2.5)
     clear_terminal()
-
-def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path):
+#add filter for having less than _ playtime in the last 2 weeks "playtime_2weeks": 120,
+def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
 
     if len(randomized_game_list) == 0 or reroll_queue == True:
-        random.shuffle(all_game_details)
-        randomized_game_list = all_game_details.copy()
-
+        if filter_type == "default":
+            random.shuffle(all_game_details)
+            randomized_game_list = all_game_details.copy()
+        elif filter_type == "playtime":
+            random.shuffle(all_game_details)
+            randomized_game_list = all_game_details.copy() 
+            temp_randomized_game_list = []
+            for game in range(len(randomized_game_list)):
+                try:
+                    if int(randomized_game_list[game][1]) <= playtime_threshold:
+                        print(f'{randomized_game_list[game][0]} kept due to having playtime of {randomized_game_list[game][1]}, less than {playtime_threshold}.')
+                        temp_randomized_game_list.append(randomized_game_list[game])
+                    else:
+                        print(f'{randomized_game_list[game][0]} removed due to having playtime of {randomized_game_list[game][1]}, greater than {playtime_threshold}.')
+                except Exception as e:
+                    pass
+        
+            randomized_game_list = temp_randomized_game_list
     permanently_excluded_split = permanently_excluded.split('|')
     temporarily_excluded_split = temporarily_excluded.split('|')
 
@@ -547,8 +563,9 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
         try:
             game_choice = randomized_game_list.pop(0)
             previous_games.append(game_choice)
-        except:
-            choice = input("No games found in list. Either you're very picky or you own no steam games. [Y] Clear exclusion preferences. [Other] Close program\n")
+
+        except Exception as e:
+            choice = input(f"No games found in list. Either you're very picky or you own no steam games. [Y] Clear exclusion preferences. [Other] Close program\n {e}")
             if choice.lower() == 'y':
                 permanently_excluded = ''
                 temporarily_excluded = ''
@@ -570,9 +587,9 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             print("No previous games.")
             game_choice = randomized_game_list.pop(0)
             previous_games.append(game_choice)
-
+    playtime_2weeks = 0
     try:
-        title = game_choice[0]; app_url = game_choice[2]; app_id = game_choice[3]; last_played = game_choice[4]
+        title = game_choice[0]; app_url = game_choice[2]; app_id = game_choice[3]; last_played = game_choice[4]; playtime_2weeks = game_choice[5]
     except Exception as e:
         print(f"Error reading game data: {e}")
 
@@ -587,6 +604,18 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             playtime = f"{hours} hr{'s' if hours > 1 else ''}, {minutes} min"
     else:
         playtime = f"{total_minutes} min" if total_minutes > 0 else "Never played."
+    #*_HR stands for human readable not human resources
+    playtime_2weeks_HR = playtime_2weeks
+    if playtime_2weeks_HR >= 60:
+        hours = playtime_2weeks_HR // 60
+        minutes = playtime_2weeks_HR % 60
+        if minutes == 0:
+            playtime_2weeks_HR = f"{hours} hr{'s' if hours > 1 else ''}"
+        else:
+            playtime_2weeks_HR = f"{hours} hr{'s' if hours > 1 else ''}, {minutes} min"
+    else:
+        playtime_2weeks_HR = f"{playtime_2weeks_HR} min"
+
     developers = []; publishers = []; platforms = []; genres = []; release_date = None; short_description = ''
     try:
         with open(f'{file_path}game_store_data.json','r') as file:
@@ -600,10 +629,10 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
             short_description = data[str(app_id)]['short_description']
     except Exception as e:
         pass
-
-    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date,short_description
+    return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
 class settings: 
+    #TODO: add hiding playtime last two weeks, and storing filter status
     def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         if os.path.exists(f'{file_path}settings.json') == True: 
             clear_terminal()
@@ -657,6 +686,12 @@ class settings:
             print(f"Unable to load settings with error {e}")
             
     def bool_to_symbol(bool): return '✓' if bool else '✗'
+
+class filters:
+    #NOTE: make sure to make it return a clear filters error if it can't find any games that fit the criteria
+    current_filter = "playtime"
+    current_playtime_threshold = 120
+
 
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 def printw(text): print(textwrap.fill(text, width=80))
