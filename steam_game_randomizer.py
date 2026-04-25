@@ -338,9 +338,9 @@ def parse_game_data(file_path,permanently_excluded):
     return permanently_excluded_split, all_game_details,game_num
 
 def get_games(file_path,api_key,user_id):
-    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YD] Refresh Game Cache & Store Details \n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
+    choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YS] Refresh Game Cache & Store Details \n[YSM] Refresh Game Cache & missing Store Details\n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
     
-    if choice.lower() == 'y' or choice.lower() == 'ydebug' or choice.lower() == 'yd':
+    if choice.lower() == 'y' or choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug' or choice.lower() == 'ydebug':
         try:
             clear_terminal()
 
@@ -378,7 +378,21 @@ def get_games(file_path,api_key,user_id):
                 game_num = game_data['response']['game_count']
             appid = 0
             store_details = {}
-            if choice.lower() == 'yd':
+            if choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+                if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
+                    existing_game_list = []
+
+                    with open(f'{file_path}game_store_data.json', 'r') as game_file:
+                        data = json.load(game_file)        
+                    for game_id, game_dat in data.items():
+                        try:
+                            existing_game_list.append(game_id)
+                            print(f"Game store page data already exists for {game_dat["name"]}.")
+                            time.sleep(0.001)
+                            clear_terminal()
+                        except:
+                            break
+                    
                 for game in range(game_num):
                     try:
                         app_id = game_data['response']['games'][game]['appid']
@@ -387,7 +401,8 @@ def get_games(file_path,api_key,user_id):
                         url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
                         response = requests.get(url)
                         data = response.json()
-
+                        if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+                            print(json.dumps(data, indent=4))
                         price_overview = data[str(app_id)]['data'].get('price_overview', {})
                         relevant_data = {
                             'success':    data[str(app_id)]['success'],
@@ -397,21 +412,24 @@ def get_games(file_path,api_key,user_id):
                             'platforms':  data[str(app_id)]['data'].get('platforms', 'N/A'),
                             'genres':     data[str(app_id)]['data'].get('genres', 'N/A'),
                             'release_date': data[str(app_id)]['data'].get('release_date', {}).get('date', 'N/A'),
+                            'name': data[str(app_id)]['data'].get('name', 'N/A'),
                         }
                         clear_terminal()
                         if data[str(app_id)]['success'] == False:
-                            raise ValueError(f"Unable to get game store page data for {app_id}")
+                            raise ValueError(f"Unable to get game store page data for {app_id}.")
                         store_details[app_id] = relevant_data
                         
                     except Exception as e:
                         print(f"Failed with error {e}. Skipping.")
                         input()
+                if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+                    input("[Enter] Continue")
                 try:
                     with open(f'{file_path}game_store_data.json', 'w') as game_file:
                         json.dump(store_details, game_file, indent=4)
                     print("Game Store data successfully stored.")
                 except Exception as e:
-                    print(f"Error Occurred. {e}")
+                    print(f"Error occurred when storing store page data: {e}")
             print(f"Game list successfully refreshed and cached.")
             time.sleep(0.5)
 
