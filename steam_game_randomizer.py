@@ -494,7 +494,8 @@ def create_storage_files():
                         "show_publishers": True,
                         "show_genres": True,
                         "show_release_date": True,
-                        "show_description": True
+                        "show_description": True,
+                        "current_filter": "default"
                     }
                     json.dump(data,file,indent=4)
                 clear_terminal()
@@ -680,7 +681,8 @@ class settings:
                             "show_publishers": setting_list[2][1],
                             "show_genres": setting_list[3][1],
                             "show_release_date": setting_list[4][1],
-                            "show_description": setting_list[5][1]
+                            "show_description": setting_list[5][1],
+                            "current_filter": filters.current_filter
                         }
                         json.dump(data,file,indent=4)   
 
@@ -698,12 +700,12 @@ class settings:
                 with open(f'{file_path}settings.json', 'r') as settings_file: 
                     settings_data = json.load(settings_file) 
                     show_images = settings_data['show_images']
-                    
                     show_developers = settings_data['show_developers']
                     show_publishers = settings_data['show_publishers']
                     show_genres = settings_data['show_genres']
                     show_release_date = settings_data['show_release_date']
                     show_description = settings_data['show_description']
+                    filters.current_filter = settings_data['current_filter']
             else:
                 print("Settings file does not exist. Using default values.")
             return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
@@ -715,10 +717,11 @@ class settings:
 class filters:
     current_filter = "default"
     current_playtime_threshold = 120
-
+    
 
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
 def printw(text): print(textwrap.fill(text, width=80))
+
 if __name__ == "__main__":
     try:
         main()
