@@ -2,6 +2,7 @@ import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
+    go to the place with comment FIX and make it not just pull one game!
     api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
 
     file_path,img_path = create_storage_files()
@@ -367,33 +368,40 @@ def get_games(file_path,api_key,user_id):
 
             print(f"Got response with status code {response.status_code}.")
             time.sleep(0.5)
-            if choice.lower() == 'ydebug':
+            if choice.lower() == 'ydebug' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                 print(json.dumps(response.json(), indent=4))
                 input("[Enter] Continue")
             
             game_num = 0
             game_data = response.json()
+            if choice.lower() == 'ydebug' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+                print(game_data)
+                input("[Enter] Continue")
             with open(f'{file_path}last_game_data.json', 'w') as game_file:
                 json.dump(game_data, game_file, indent=4)
                 game_num = game_data['response']['game_count']
             appid = 0
             store_details = {}
+            #FIX
             if choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                 if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
                     existing_game_list = []
 
                     with open(f'{file_path}game_store_data.json', 'r') as game_file:
                         data = json.load(game_file)        
-                    for game_id, game_dat in data.items():
-                        try:
-                            existing_game_list.append(game_id)
-                            print(f"Game store page data already exists for {game_dat["name"]}.")
-                            time.sleep(0.001)
-                            clear_terminal()
-                        except:
-                            break
-                    
-                for game in range(game_num):
+                    for game_id, temp_game_data in data.items():
+                        existing_game_list.append(game_id)
+                        print(f"Game store page data already exists for {temp_game_data['name']}.")
+                        time.sleep(0.001)
+                        clear_terminal()
+
+                    game_data['response']['games'] = [
+                        game for game in game_data['response']['games']
+                        if str(game['appid']) not in existing_game_list
+                    ]
+                    game_num = len(game_data['response']['games'])
+                game_details_fetched = 0
+                for game in range(len(game_data)):
                     try:
                         app_id = game_data['response']['games'][game]['appid']
                         game_name = game_data['response']['games'][game]['name']
@@ -414,22 +422,34 @@ def get_games(file_path,api_key,user_id):
                             'release_date': data[str(app_id)]['data'].get('release_date', {}).get('date', 'N/A'),
                             'name': data[str(app_id)]['data'].get('name', 'N/A'),
                         }
+
                         clear_terminal()
                         if data[str(app_id)]['success'] == False:
                             raise ValueError(f"Unable to get game store page data for {app_id}.")
                         store_details[app_id] = relevant_data
-                        
+                        game_details_fetched += 1
                     except Exception as e:
                         print(f"Failed with error {e}. Skipping.")
                         input()
+                print(f"Retrieved new data for {game_details_fetched} {'game' if game_details_fetched != 0 else 'games'}.")
+                time.sleep(1)
                 if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                     input("[Enter] Continue")
                 try:
+                    try:
+                        with open(f'{file_path}game_store_data.json', 'r') as game_file:
+                            existing_game_data = json.load(game_file)
+                    except (json.JSONDecodeError, FileNotFoundError):
+                        existing_game_data = {}
+
+                    existing_game_data.update(store_details)
+
                     with open(f'{file_path}game_store_data.json', 'w') as game_file:
                         json.dump(store_details, game_file, indent=4)
                     print("Game Store data successfully stored.")
                 except Exception as e:
                     print(f"Error occurred when storing store page data: {e}")
+                    input()
             print(f"Game list successfully refreshed and cached.")
             time.sleep(0.5)
 
@@ -461,13 +481,13 @@ def create_storage_files():
     except FileExistsError:
         pass
     
-    if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False:
+    if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False or os.path.exists(f'{file_path}game_store_data.json') == False:
         
         choice = input("One or more storage files not found. [Y] Create Files [Other] Close Program\n")
         clear_terminal()
 
         if choice.lower() == 'y':
-
+            #make this code better with like looping through with a list or something, this is a lot of copy pasted code.
             choice = ''
             if os.path.exists(f'{file_path}exclusion_list.json') == True: 
                 choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No\n")
@@ -519,6 +539,17 @@ def create_storage_files():
                 clear_terminal()
                 print(f"Created settings file at {file_path}settings.json")
                 time.sleep(2.5)
+
+            if os.path.exists(f'{file_path}game_store_data.json') == True: 
+                choice = input("Game Store Data Found file found. Recreate? [Y] Yes [Other] No\n")
+            if choice.lower() == 'y' or os.path.exists(f'{file_path}game_store_data.json') == False:
+                with open(f'{file_path}game_store_data.json', 'w') as file:
+                    data = {}
+                    json.dump(data,file,indent=4)
+                clear_terminal()
+                print(f"Created game store data file at {file_path}game_store_data.json")
+                time.sleep(2.5)
+
             clear_terminal()
         else:
             exit()
