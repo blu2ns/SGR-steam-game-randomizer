@@ -524,7 +524,6 @@ def create_storage_files():
     return file_path,img_path
 
 def create_keyids(file_path):
-
     clear_terminal()
     api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
     clear_terminal()
@@ -732,8 +731,10 @@ class settings:
     def bool_to_symbol(bool): return '✓' if bool else '✗'
 
 class filters:
+    #default, norecent, playtime
     current_filter = "default"
     current_playtime_threshold = 120
+    #implement switching the filter
     
 
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
