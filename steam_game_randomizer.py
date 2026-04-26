@@ -2,7 +2,6 @@ import requests,os,json,random,time,subprocess,climage,datetime,textwrap
 from pathlib import Path
 
 def main():
-    go to the place with comment FIX and make it not just pull one game!
     api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
 
     file_path,img_path = create_storage_files()
@@ -382,7 +381,6 @@ def get_games(file_path,api_key,user_id):
                 game_num = game_data['response']['game_count']
             appid = 0
             store_details = {}
-            #FIX
             if choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                 if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
                     existing_game_list = []
@@ -401,7 +399,7 @@ def get_games(file_path,api_key,user_id):
                     ]
                     game_num = len(game_data['response']['games'])
                 game_details_fetched = 0
-                for game in range(len(game_data)):
+                for game in range(game_num):
                     try:
                         app_id = game_data['response']['games'][game]['appid']
                         game_name = game_data['response']['games'][game]['name']
@@ -411,6 +409,9 @@ def get_games(file_path,api_key,user_id):
                         data = response.json()
                         if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                             print(json.dumps(data, indent=4))
+                        if data[str(app_id)]['success'] == False:
+                            print(f"Unable to retreive game data for {game_name}, skipping.")
+                            continue
                         price_overview = data[str(app_id)]['data'].get('price_overview', {})
                         relevant_data = {
                             'success':    data[str(app_id)]['success'],
@@ -424,8 +425,6 @@ def get_games(file_path,api_key,user_id):
                         }
 
                         clear_terminal()
-                        if data[str(app_id)]['success'] == False:
-                            raise ValueError(f"Unable to get game store page data for {app_id}.")
                         store_details[app_id] = relevant_data
                         game_details_fetched += 1
                     except Exception as e:
@@ -445,7 +444,7 @@ def get_games(file_path,api_key,user_id):
                     existing_game_data.update(store_details)
 
                     with open(f'{file_path}game_store_data.json', 'w') as game_file:
-                        json.dump(store_details, game_file, indent=4)
+                        json.dump(existing_game_data, game_file, indent=4)
                     print("Game Store data successfully stored.")
                 except Exception as e:
                     print(f"Error occurred when storing store page data: {e}")
@@ -484,72 +483,40 @@ def create_storage_files():
     if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False or os.path.exists(f'{file_path}game_store_data.json') == False:
         
         choice = input("One or more storage files not found. [Y] Create Files [Other] Close Program\n")
-        clear_terminal()
 
         if choice.lower() == 'y':
-            #make this code better with like looping through with a list or something, this is a lot of copy pasted code.
-            choice = ''
-            if os.path.exists(f'{file_path}exclusion_list.json') == True: 
-                choice = input("Exclusion List found. Recreate? [Y] Yes [Other] No\n")
-            if choice.lower() == 'y' or os.path.exists(f'{file_path}exclusion_list.json') == False:
-                with open(f'{file_path}exclusion_list.json', 'w') as file: 
-                    data = {
-                        "permanently_excluded": ""
-                    }
-                    json.dump(data,file,indent=4)
+            file_list = [
+                ("Exclusion List",      "exclusion_list.json",  {"permanently_excluded": ""}),
+                ("Game Data",           "last_game_data.json",  {}),
+                ("Game Store Data",     "game_store_data.json", {}),
+                ("Settings",            "settings.json",        {
+                    "show_images": True,
+                    "show_developers": True,
+                    "show_publishers": True,
+                    "show_genres": True,
+                    "show_release_date": True,
+                    "show_description": True,
+                    "current_filter": "default"
+                }),
+            ]
+
+            for game_indx in range(len(file_list)):
+                storage_file_path = f'{file_path}{file_list[game_indx][1]}'
+                choice = ''
                 clear_terminal()
-                print(f"Created game exclusion storage file at {file_path}exclusion_list.json.")
-                time.sleep(2.5)
-            
-            clear_terminal()
+                if os.path.exists(storage_file_path) == True: 
+                    choice = input(f"{file_list[game_indx][0]} storage file found. Recreate? [Y] Yes [Other] No\n")
+                if choice.lower() == 'y' or os.path.exists(storage_file_path) == False:
+                    with open(storage_file_path, 'w') as file: 
+                        json.dump(file_list[game_indx][2],file,indent=4)
+                    clear_terminal()
+                    print(f"Created game exclusion storage file at {storage_file_path}.")
+                    time.sleep(2.5)
             choice = ''
             if os.path.exists(f'{file_path}keyids.json') == True:
                 choice = input("Credentials file found. Recreate? [Y] Yes [Other] No\n")
             if choice.lower() == 'y' or os.path.exists(f'{file_path}keyids.json') == False:
                 create_keyids(file_path)
-            
-            clear_terminal()
-            choice = ''
-            if os.path.exists(f'{file_path}last_game_data.json') == True:
-                choice = input("Game data file found. Recreate? [Y] Yes [Other] No\n")
-            if choice.lower() == 'y' or os.path.exists(f'{file_path}last_game_data.json') == False:
-                with open(f'{file_path}last_game_data.json', 'w') as file: 
-                    data = {}
-                    json.dump(data,file,indent=4)
-                clear_terminal()
-                print(f"Created empty storage file at {file_path}last_game_data.json.")
-                time.sleep(2.5)
-            clear_terminal()
-
-            choice = ''
-            if os.path.exists(f'{file_path}settings.json') == True: 
-                choice = input("Settings file found. Recreate? [Y] Yes [Other] No\n")
-            if choice.lower() == 'y' or os.path.exists(f'{file_path}settings.json') == False:
-                with open(f'{file_path}settings.json', 'w') as file: 
-                    data = {
-                        "show_images": True,
-                        "show_developers": True,
-                        "show_publishers": True,
-                        "show_genres": True,
-                        "show_release_date": True,
-                        "show_description": True,
-                        "current_filter": "default"
-                    }
-                    json.dump(data,file,indent=4)
-                clear_terminal()
-                print(f"Created settings file at {file_path}settings.json")
-                time.sleep(2.5)
-
-            if os.path.exists(f'{file_path}game_store_data.json') == True: 
-                choice = input("Game Store Data Found file found. Recreate? [Y] Yes [Other] No\n")
-            if choice.lower() == 'y' or os.path.exists(f'{file_path}game_store_data.json') == False:
-                with open(f'{file_path}game_store_data.json', 'w') as file:
-                    data = {}
-                    json.dump(data,file,indent=4)
-                clear_terminal()
-                print(f"Created game store data file at {file_path}game_store_data.json")
-                time.sleep(2.5)
-
             clear_terminal()
         else:
             exit()
@@ -557,14 +524,15 @@ def create_storage_files():
     return file_path,img_path
 
 def create_keyids(file_path):
+
     clear_terminal()
-    api_key = input(f"Input API key. This can be changed later by opening {file_path}keyids.json,\n or running the program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
+    api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
     clear_terminal()
     print("API key added.")
     time.sleep(2)
     clear_terminal()
 
-    user_id = input(f"Input User ID. This can be changed later by opening {file_path}keyids.json,\n or running the program again and following the prompt.\nA guide to finding this can be found on the github page or in the README.\n")
+    user_id = input(f"Input User ID. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
     clear_terminal()
     print("User ID added.")
     time.sleep(2)
