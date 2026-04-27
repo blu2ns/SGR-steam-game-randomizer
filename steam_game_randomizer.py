@@ -466,7 +466,7 @@ def get_games(file_path,api_key,user_id):
         get_games(file_path,api_key,user_id)
 
 def create_storage_files():
-    file_path = r"~/"
+    
     file_path = Path(__file__).resolve().parent
     file_path = os.path.join(str(file_path), "storage", "")
 
@@ -475,7 +475,6 @@ def create_storage_files():
     except FileExistsError:
         pass
 
-    img_path = ''
     img_path = os.path.join(str(file_path), "images", "")
 
     try:
@@ -737,7 +736,6 @@ class settings:
                     return "No Recent Games"
                 case "playtime":
                     return "Less than _ Playtime"
-
         else:
             return val
         
