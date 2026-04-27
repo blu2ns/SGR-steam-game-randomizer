@@ -83,7 +83,9 @@ def main():
             try:
                 subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
             except Exception as e:
+                clear_terminal()
                 print(f"Unable to open game page with error {e}.")
+                time.sleep(2)
         
         elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
@@ -511,7 +513,7 @@ def create_storage_files():
                     with open(storage_file_path, 'w') as file: 
                         json.dump(file_list[game_indx][2],file,indent=4)
                     clear_terminal()
-                    print(f"Created game exclusion storage file at {storage_file_path}.")
+                    print(f"Created {file_list[game_indx][0]} storage file at {storage_file_path}.")
                     time.sleep(2.5)
             choice = ''
             if os.path.exists(f'{file_path}keyids.json') == True:
@@ -656,7 +658,7 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
 
 class settings: 
     #default, norecent, playtime
-    current_filter = "norecent"
+    current_filter = "default"
     current_playtime_threshold = 120
     #TODO: add hiding playtime last two weeks, and storing filter type
     def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
@@ -675,8 +677,13 @@ class settings:
             except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
             if -1 < choice <= len(setting_list):
                 try:
-                    setting_list[choice][1] = not setting_list[choice][1]
-
+                    if setting_list[choice][1] != settings.current_filter or setting_list[choice][1] != settings.current_playtime_threshold:
+                        setting_list[choice][1] = not setting_list[choice][1]
+                    else:
+                        if setting_list[choice][1] == settings.current_filter:
+                            choice = input("Input filter type")
+                        else:
+                            choice = input("Input playtime threshold number")
                     with open(f'{file_path}settings.json', 'w') as file: 
                         data = {
                             "show_images": setting_list[0][1],
@@ -715,7 +722,7 @@ class settings:
                 print("Settings file does not exist. Using default values.")
             return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
         except Exception as e:
-            print(f"Unable to load settings with error {e}")
+            print(f"Unable to load settings with error {e}. Try deleting the file and recreating it if the error continues.")
             
     def bool_to_symbol(val): 
         if isinstance(val, bool):
