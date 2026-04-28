@@ -665,7 +665,7 @@ class settings:
             clear_terminal()
             print(f"{'-'*6}   Settings   {'-'*6}")
             
-            setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description],["Current Filter",settings.current_filter],["Filter Playtime Threshold",settings.current_playtime_threshold]]
+            setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
             for setting in range(len(setting_list)):
                 print(f'{setting}) {setting_list[setting][0]}: {settings.bool_to_symbol(setting_list[setting][1])}')
                 if setting_list[setting][1] == "default" or setting_list[setting][1] == "norecent":
@@ -676,13 +676,27 @@ class settings:
             except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
             if -1 < choice <= len(setting_list):
                 try:
-                    if setting_list[choice][1] != settings.current_filter or setting_list[choice][1] != settings.current_playtime_threshold:
+                    if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Filter Threshold":
                         setting_list[choice][1] = not setting_list[choice][1]
                     else:
-                        if setting_list[choice][1] == settings.current_filter:
-                            choice = input("Input filter type")
+                        if setting_list[choice][0] == "Current Filter":
+                            #name,description,how it is stored
+                            filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","norecent"]]
+                            clear_terminal()
+                            print(f"{'-'*6}   Filters   {'-'*6}")
+                            for filter in range(len(filter_list)):
+                                print(f"{filter}) {filter_list[filter][0]} - {filter_list[filter][1]}")
+                            choice = ''
+                            choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
+                            THERE BE A BUG HERE
+                            try:
+                                settings.current_filter = filter_list[int(choice)][2]
+                            except IndexError:
+                                if choice != '':
+                                    print("Invalid choice.")
                         else:
                             choice = input("Input playtime threshold number")
+
                     with open(f'{file_path}settings.json', 'w') as file: 
                         data = {
                             "show_images": setting_list[0][1],
@@ -736,6 +750,8 @@ class settings:
                     return "No Recent Games"
                 case "playtime":
                     return "Less than _ Playtime"
+                case _:
+                    return val
         else:
             return val
         
