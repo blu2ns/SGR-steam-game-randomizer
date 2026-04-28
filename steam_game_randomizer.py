@@ -243,13 +243,14 @@ def main():
             reroll_queue = True
 
         elif choice.lower() == 's': #view settings
+            pre_filter = settings.current_filter; pre_playtime_threshold = settings.current_playtime_threshold
             show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games)
-
+            if pre_filter != settings.current_filter or pre_playtime_threshold != settings.current_playtime_threshold:
+                reroll_queue = True
         elif choice.lower() == 'e': #exit
             exit()
 
 def print_game_image(file_path,app_id,img_path,title):
-    #fix this for some reason randomly having glitchy images
     img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
     if os.path.exists(img_path) != True:
         print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
@@ -265,7 +266,7 @@ def print_game_image(file_path,app_id,img_path,title):
             with open(img_path, "wb") as f:
                 f.write(response.content)
             clear_terminal()
-            
+             
         except:
             pass
     print("-" * 80) 
@@ -274,7 +275,7 @@ def print_game_image(file_path,app_id,img_path,title):
         rows = image.split('\n')
         print()
         for index, row in enumerate(rows):
-            print(f'{row}')
+            print(f'{row}\033[0m')
             if index >= 11: break
         print()
     except:
@@ -690,9 +691,6 @@ class settings:
                             if isinstance(num,int) and num >= 0:
                                 settings.current_playtime_threshold = num
                                 clear_terminal()
-                                r = randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, randomized_game_list, previous_games,file_path,settings.current_filter,settings.current_playtime_threshold)
-                                randomized_game_list = r[5] 
-                                previous_games = r[6]
                                 print(f"Playtime threshold changed to {num} mins.")
                                 time.sleep(1.5)
                             else:
@@ -717,9 +715,6 @@ class settings:
                                 time.sleep(0.4)
                                 print(f"Rerolling game queue based on new filter...")
                                 time.sleep(1)
-                                r = randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, randomized_game_list, previous_games,file_path,settings.current_filter,settings.current_playtime_threshold)
-                                randomized_game_list = r[5] 
-                                previous_games = r[6]
                             elif isinstance(filter_choice, int):
                                 print("Invalid number.")
                         else:
