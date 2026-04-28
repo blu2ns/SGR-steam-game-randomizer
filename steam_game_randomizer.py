@@ -243,13 +243,13 @@ def main():
             reroll_queue = True
 
         elif choice.lower() == 's': #view settings
-            show_images,show_developers,show_publishers,show_genres,show_release_date,show_description = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description)
+            show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games)
 
         elif choice.lower() == 'e': #exit
             exit()
 
 def print_game_image(file_path,app_id,img_path,title):
-
+    #fix this for some reason randomly having glitchy images
     img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
     if os.path.exists(img_path) != True:
         print(f"Getting image for {title}. The first time a game is rolled may take longer due to this. Once images are cached, rolls will be faster.")
@@ -552,34 +552,36 @@ def create_keyids(file_path):
     clear_terminal()
 #TODO: add filter for having less than _ playtime in the last 2 weeks "playtime_2weeks": 120,
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
-
     if len(randomized_game_list) == 0 or reroll_queue == True:
         if filter_type == "default":
-            random.shuffle(all_game_details)
             randomized_game_list = all_game_details.copy()
+            random.shuffle(randomized_game_list)
         elif filter_type == "playtime":
             try:
-                random.shuffle(all_game_details)
-                randomized_game_list = all_game_details.copy() 
+                randomized_game_list = all_game_details.copy()
+                random.shuffle(randomized_game_list)
                 temp_randomized_game_list = []
                 for game in range(len(randomized_game_list)):
                     try:
                         if int(randomized_game_list[game][1]) <= playtime_threshold:
                             temp_randomized_game_list.append(randomized_game_list[game])
+                        #     print(f'{randomized_game_list[game][0]} kept due to having playtime of {randomized_game_list[game][1]}, less than {playtime_threshold}.')
+                        # else:
+                        #     print(f'{randomized_game_list[game][0]} removed due to having playtime of {randomized_game_list[game][1]}, greater than {playtime_threshold}.')
                     except Exception as e:
                         pass
             
-                randomized_game_list = temp_randomized_game_list
-            except:
-                choice = input("No games fit criteria of current filter. Clear and try again? [Y] Yes [Other] Close Program")
+                randomized_game_list = temp_randomized_game_list.copy()
+            except Exception as e:
+                choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
                 if choice.lower() == 'y':
                     randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
                 else:
                     exit()
         elif filter_type == "norecent":
             try:
-                random.shuffle(all_game_details)
-                randomized_game_list = all_game_details.copy() 
+                randomized_game_list = all_game_details.copy()
+                random.shuffle(randomized_game_list)
                 temp_randomized_game_list = []
                 for game in range(len(randomized_game_list)):
                     try:
@@ -588,9 +590,9 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
                     except Exception as e:
                         pass
             
-                randomized_game_list = temp_randomized_game_list
-            except:
-                choice = input("No games fit criteria of current filter. Clear and try again? [Y] Yes [Other] Close Program. (make sure to change filter setting)")
+                randomized_game_list = temp_randomized_game_list.copy()
+            except Exception as e:
+                choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
                 if choice.lower() == 'y':
                     randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
                 else:
@@ -660,7 +662,7 @@ class settings:
     current_filter = "default"
     current_playtime_threshold = 120
     #TODO: add hiding playtime last two weeks, and storing filter type
-    def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
+    def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
         if os.path.exists(f'{file_path}settings.json') == True: 
             clear_terminal()
             print(f"{'-'*6}   Settings   {'-'*6}")
@@ -673,27 +675,53 @@ class settings:
                     break
             choice = None
             try: choice = int(input(f"[0-{len(setting_list)-2}] Toggle Setting [ENTER] Return\n"))
-            except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description
+            except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games
             if -1 < choice <= len(setting_list):
                 try:
-                    if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Filter Threshold":
+                    if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Threshold" :
                         setting_list[choice][1] = not setting_list[choice][1]
+                        clear_terminal()
+                        print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
+                        time.sleep(1)
+                    elif setting_list[choice][0] == 'Playtime Threshold':
+                        clear_terminal()
+                        try: 
+                            num = int(input(f"Input Playtime threshold in minutes. Low Played Games will hide games with\nplaytime above this number. Current: {settings.current_playtime_threshold} mins.\n"))
+                            if isinstance(num,int) and num >= 0:
+                                settings.current_playtime_threshold = num
+                                clear_terminal()
+                                r = randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, randomized_game_list, previous_games,file_path,settings.current_filter,settings.current_playtime_threshold)
+                                randomized_game_list = r[5] 
+                                previous_games = r[6]
+                                print(f"Playtime threshold changed to {num} mins.")
+                                time.sleep(1.5)
+                            else:
+                                print("Invalid input")
+                        except Exception as e: 
+                            print(f"Error: {e}")
                     else:
                         if setting_list[choice][0] == "Current Filter":
+                            previous_filter = settings.current_filter
                             #name,description,how it is stored
-                            filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","norecent"]]
+                            filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","playtime"]]
                             clear_terminal()
                             print(f"{'-'*6}   Filters   {'-'*6}")
                             for filter in range(len(filter_list)):
                                 print(f"{filter}) {filter_list[filter][0]} - {filter_list[filter][1]}")
-                            choice = ''
-                            choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
-                            THERE BE A BUG HERE
-                            try:
-                                settings.current_filter = filter_list[int(choice)][2]
-                            except IndexError:
-                                if choice != '':
-                                    print("Invalid choice.")
+                            filter_choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
+                            if -1 < int(filter_choice) <= len(filter_list):
+                                settings.current_filter = str(filter_list[int(filter_choice)][2])
+                                
+                                clear_terminal()
+                                print(f"{previous_filter} changed to {settings.current_filter}.")
+                                time.sleep(0.4)
+                                print(f"Rerolling game queue based on new filter...")
+                                time.sleep(1)
+                                r = randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, randomized_game_list, previous_games,file_path,settings.current_filter,settings.current_playtime_threshold)
+                                randomized_game_list = r[5] 
+                                previous_games = r[6]
+                            elif isinstance(filter_choice, int):
+                                print("Invalid number.")
                         else:
                             choice = input("Input playtime threshold number")
 
@@ -710,14 +738,13 @@ class settings:
                         }
                         json.dump(data,file,indent=4)   
 
-                    clear_terminal()
-                    print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
-                    time.sleep(1)
+
                 except Exception as e:
                     print(f"Unable to save settings with error {e}.")
                     input()
                 
-            return setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1]
+            return setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1], randomized_game_list, previous_games
+
     def load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         try:
             if os.path.exists(f'{file_path}settings.json') == True: 
