@@ -707,16 +707,19 @@ class settings:
                             for filter in range(len(filter_list)):
                                 print(f"{filter}) {filter_list[filter][0]} - {filter_list[filter][1]}")
                             filter_choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
-                            if -1 < int(filter_choice) <= len(filter_list):
-                                settings.current_filter = str(filter_list[int(filter_choice)][2])
-                                
-                                clear_terminal()
-                                print(f"{previous_filter} changed to {settings.current_filter}.")
-                                time.sleep(0.4)
-                                print(f"Rerolling game queue based on new filter...")
-                                time.sleep(1)
-                            elif isinstance(filter_choice, int):
-                                print("Invalid number.")
+                            try:
+                                if -1 < int(filter_choice) <= len(filter_list):
+                                    settings.current_filter = str(filter_list[int(filter_choice)][2])
+                                    
+                                    clear_terminal()
+                                    print(f"{previous_filter} changed to {settings.current_filter}.")
+                                    time.sleep(0.4)
+                                    print(f"Rerolling game queue based on new filter...")
+                                    time.sleep(1)
+                                elif isinstance(filter_choice, int):
+                                    print("Invalid number.")
+                            except ValueError:
+                                pass
                         else:
                             choice = input("Input playtime threshold number")
 
