@@ -434,7 +434,7 @@ def get_games(file_path,api_key,user_id):
                     except Exception as e:
                         print(f"Failed with error {e}. Skipping.")
                         input()
-                print(f"Retrieved new data for {game_details_fetched} {'game' if game_details_fetched != 0 else 'games'}.")
+                print(f"Retrieved new data for {game_details_fetched} {'games' if game_details_fetched != 1 else 'game'}.")
                 time.sleep(1)
                 if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                     input("[Enter] Continue")
