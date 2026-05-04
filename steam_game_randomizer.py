@@ -59,6 +59,7 @@ def main():
         
         if show_description == True:
             if short_description != '':
+                #this doesnt work with when the description is in another language than english
                 print("-" * 80)
                 print(textwrap.fill(short_description, width=80))
         if len(title) > 65:
@@ -77,16 +78,19 @@ def main():
             try:
                 subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
             except Exception as e:
-                print(f"Unable to run game with error {e}.")
+                clear_terminal()
+                print(f"Unable to run {title} with error {e}.")
+                input("[Enter] Continue\n")
         
         elif choice.lower() == 'v': #see game page in desktop app:
             try:
                 subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
             except Exception as e:
                 clear_terminal()
-                print(f"Unable to open game page with error {e}.")
-                time.sleep(2)
-        
+                print(f"Unable to open game page for {title} with error {e}.")
+                input("[Enter] Continue\n")
+
+        #combine the x and z branch into one and compact it
         elif choice.lower() == 'x': #exclude game permanently
             clear_terminal()
             
@@ -309,7 +313,7 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
             images_added += 1
         except:
             print(f"Game image and backup game image for {title} not found.")
-    #this sometimes has an inaccurate number
+    #this sometimes has an inaccurate number?
     input(f"{images_added} new images successfully cached. [Enter] Continue\n")
 
 def parse_game_data(file_path,permanently_excluded):
@@ -551,7 +555,7 @@ def create_keyids(file_path):
     print(f"Stored credentials at {file_path}keyids.json.")
     time.sleep(2.5)
     clear_terminal()
-#TODO: add filter for having less than _ playtime in the last 2 weeks "playtime_2weeks": 120,
+
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
     if len(randomized_game_list) == 0 or reroll_queue == True:
         if filter_type == "default":
@@ -566,9 +570,6 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
                     try:
                         if int(randomized_game_list[game][1]) <= playtime_threshold:
                             temp_randomized_game_list.append(randomized_game_list[game])
-                        #     print(f'{randomized_game_list[game][0]} kept due to having playtime of {randomized_game_list[game][1]}, less than {playtime_threshold}.')
-                        # else:
-                        #     print(f'{randomized_game_list[game][0]} removed due to having playtime of {randomized_game_list[game][1]}, greater than {playtime_threshold}.')
                     except Exception as e:
                         pass
             
@@ -662,7 +663,7 @@ class settings:
     #default, norecent, playtime
     current_filter = "default"
     current_playtime_threshold = 120
-    #TODO: add hiding playtime last two weeks, and storing filter type
+
     def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
         if os.path.exists(f'{file_path}settings.json') == True: 
             clear_terminal()
