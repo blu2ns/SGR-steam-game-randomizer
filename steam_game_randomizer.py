@@ -20,9 +20,8 @@ def main():
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
     if_go_back = False; reroll_queue = False
+    clear_terminal(); print('-' * 80)
 
-    clear_terminal()
-    print('-' * 80)
     choice = input("Refresh game image cache? This step is only necessary to do once.\nIt may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
     if choice.lower() == 'r':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=True)
@@ -59,7 +58,6 @@ def main():
         
         if show_description == True:
             if short_description != '':
-                #this doesnt work with when the description is in another language than english
                 print("-" * 80)
                 print(textwrap.fill(short_description, width=80))
         if len(title) > 65:
@@ -78,16 +76,14 @@ def main():
             try:
                 subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
             except Exception as e:
-                clear_terminal()
-                print(f"Unable to run {title} with error {e}.")
+                clear_terminal(); print(f"Unable to run {title} with error {e}.")
                 input("[Enter] Continue\n")
         
         elif choice.lower() == 'v': #see game page in desktop app:
             try:
                 subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
             except Exception as e:
-                clear_terminal()
-                print(f"Unable to open game page for {title} with error {e}.")
+                clear_terminal(); print(f"Unable to open game page for {title} with error {e}.")
                 input("[Enter] Continue\n")
 
         #combine the x and z branch into one and compact it
@@ -121,8 +117,7 @@ def main():
             time.sleep(1)
         
         elif choice.lower() == 'z': #exclude game temporarily
-            clear_terminal()
-            print(f"{title} excluded temporarily.")
+            clear_terminal(); print(f"{title} excluded temporarily.")
 
             if temporarily_excluded != "":
                 temporarily_excluded = str(temporarily_excluded) + "|" + str(title)
@@ -141,8 +136,7 @@ def main():
 
         elif choice.lower() == 'c': #see list of excluded games
             #make this code into a function to make it less repetitive
-            clear_terminal()
-            print("-" * 80)
+            clear_terminal(); print("-" * 80)
             permanently_excluded_split = permanently_excluded.split('|')
             temporarily_excluded_split = temporarily_excluded.split('|')
 
@@ -150,9 +144,10 @@ def main():
                 print("List of permanently excluded items:")
                 for n in range(len(permanently_excluded_split)):
                     print(f"{n}) {permanently_excluded_split[n]}")
+                print('')
             else:
                 print("No permanently excluded games.")
-            print('')
+            
             if temporarily_excluded_split[0] != '':
                 print("List of temporarily excluded items:")
                 for n in range(len(temporarily_excluded_split)):
@@ -169,8 +164,7 @@ def main():
                             pool_choice = choice[0]
                             number_choice = int(choice[1:len(choice)])
                         except:
-                            clear_terminal()
-                            print("Invalid Input. Try again later.")
+                            clear_terminal(); print("Invalid Input. Try again later.")
                             time.sleep(3)
                     if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
                         if choice[6] == 'p':
@@ -205,8 +199,7 @@ def main():
 
                                     for game in range(len(temporarily_excluded_split)):
                                         temporarily_excluded = '|'.join(temporarily_excluded_split)
-                                    clear_terminal()
-                                    print(f"{removed_title} removed.")
+                                    clear_terminal(); print(f"{removed_title} removed.")
                                     time.sleep(1)
                                 else: print("No game located at that position.")
                             else: 
@@ -224,8 +217,7 @@ def main():
                                             "permanently_excluded": f"{permanently_excluded}"
                                         }
                                         json.dump(data,file,indent=4)
-                                    clear_terminal()
-                                    print(f"{removed_title} removed.")
+                                    clear_terminal(); print(f"{removed_title} removed.")
                                     time.sleep(1)
                                 else: print("No game located at that position.")
                         except Exception as e:
@@ -270,7 +262,6 @@ def print_game_image(file_path,app_id,img_path,title):
             with open(img_path, "wb") as f:
                 f.write(response.content)
             clear_terminal()
-             
         except:
             pass
     print("-" * 80) 
@@ -297,8 +288,7 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
             clear_terminal()
             continue
         try:
-            clear_terminal()
-            print(f"Getting image for {title}. [{game + 1}/{len(all_game_details)}]")
+            clear_terminal(); print(f"Getting image for {title}. [{game + 1}/{len(all_game_details)}]")
             url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{id}/library_hero.jpg"
             response = requests.get(url)
 
@@ -308,8 +298,7 @@ def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,r
 
             with open(img_path, "wb") as f:
                 f.write(response.content)
-            clear_terminal()
-            print(f"Image found for {title}. [{game + 1}/{len(all_game_details)}]")
+            clear_terminal(); print(f"Image found for {title}. [{game + 1}/{len(all_game_details)}]")
             images_added += 1
         except:
             print(f"Game image and backup game image for {title} not found.")
@@ -503,7 +492,8 @@ def create_storage_files():
                     "show_genres": True,
                     "show_release_date": True,
                     "show_description": True,
-                    "current_filter": "default"
+                    "current_filter": "default",
+                    "current_playtime_threshold": 120
                 }),
             ]
 
@@ -516,9 +506,9 @@ def create_storage_files():
                 if choice.lower() == 'y' or os.path.exists(storage_file_path) == False:
                     with open(storage_file_path, 'w') as file: 
                         json.dump(file_list[game_indx][2],file,indent=4)
-                    clear_terminal()
-                    print(f"Created {file_list[game_indx][0]} storage file at {storage_file_path}.")
+                    clear_terminal(); print(f"Created {file_list[game_indx][0]} storage file at {storage_file_path}.")
                     time.sleep(2.5)
+                    
             choice = ''
             if os.path.exists(f'{file_path}keyids.json') == True:
                 choice = input("Credentials file found. Recreate? [Y] Yes [Other] No\n")
@@ -531,30 +521,19 @@ def create_storage_files():
     return file_path,img_path
 
 def create_keyids(file_path):
-    clear_terminal()
-    api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
-    clear_terminal()
-    print("API key added.")
-    time.sleep(2)
-    clear_terminal()
+    clear_terminal(); api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n"); clear_terminal()
+    print("API key added."); time.sleep(2)
 
-    user_id = input(f"Input User ID. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
-    clear_terminal()
-    print("User ID added.")
-    time.sleep(2)
-    clear_terminal()
+    clear_terminal(); user_id = input(f"Input User ID. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n"); clear_terminal()
+    print("User ID added."); time.sleep(2); clear_terminal()
 
-    
     with open(f'{file_path}keyids.json', 'w') as file: 
         data = {
             "api_key": f"{api_key}",
             "user_id": f"{user_id}"
         }
         json.dump(data,file,indent=4)
-    clear_terminal()
-    print(f"Stored credentials at {file_path}keyids.json.")
-    time.sleep(2.5)
-    clear_terminal()
+    clear_terminal(); print(f"Stored credentials at {file_path}keyids.json."); time.sleep(2.5); clear_terminal()
 
 def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
     if len(randomized_game_list) == 0 or reroll_queue == True:
@@ -609,8 +588,6 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
         try:
             game_choice = randomized_game_list.pop(0)
             previous_games.append(game_choice)
-            # print(game_choice)
-            # input()
         except Exception as e:
             print('-' *80)
             choice = input(f"No games found in list. Either you're very picky or you own no steam games.\n[Y] Clear exclusion preferences. [Other] Close program\n {e}")
@@ -660,14 +637,13 @@ def randomize_game(all_game_details, permanently_excluded, temporarily_excluded,
     return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
 class settings: 
-    #default, norecent, playtime
+    #'default', 'norecent', 'playtime'
     current_filter = "default"
     current_playtime_threshold = 120
 
     def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
         if os.path.exists(f'{file_path}settings.json') == True: 
-            clear_terminal()
-            print(f"{'-'*6}   Settings   {'-'*6}")
+            clear_terminal(); print(f"{'-'*6}   Settings   {'-'*6}")
             
             setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
             for setting in range(len(setting_list)):
@@ -682,8 +658,7 @@ class settings:
                 try:
                     if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Threshold" :
                         setting_list[choice][1] = not setting_list[choice][1]
-                        clear_terminal()
-                        print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
+                        clear_terminal(); print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
                         time.sleep(1)
                     elif setting_list[choice][0] == 'Playtime Threshold':
                         clear_terminal()
@@ -691,8 +666,7 @@ class settings:
                             num = int(input(f"Input Playtime threshold in minutes. Low Played Games will hide games with\nplaytime above this number. Current: {settings.current_playtime_threshold} mins.\n"))
                             if isinstance(num,int) and num >= 0:
                                 settings.current_playtime_threshold = num
-                                clear_terminal()
-                                print(f"Playtime threshold changed to {num} mins.")
+                                clear_terminal(); print(f"Playtime threshold changed to {num} mins.")
                                 time.sleep(1.5)
                             else:
                                 print("Invalid input")
@@ -703,8 +677,7 @@ class settings:
                             previous_filter = settings.current_filter
                             #name,description,how it is stored
                             filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","playtime"]]
-                            clear_terminal()
-                            print(f"{'-'*6}   Filters   {'-'*6}")
+                            clear_terminal(); print(f"{'-'*6}   Filters   {'-'*6}")
                             for filter in range(len(filter_list)):
                                 print(f"{filter}) {filter_list[filter][0]} - {filter_list[filter][1]}")
                             filter_choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
@@ -712,8 +685,7 @@ class settings:
                                 if -1 < int(filter_choice) <= len(filter_list):
                                     settings.current_filter = str(filter_list[int(filter_choice)][2])
                                     
-                                    clear_terminal()
-                                    print(f"{previous_filter} changed to {settings.current_filter}.")
+                                    clear_terminal(); print(f"{previous_filter} changed to {settings.current_filter}.")
                                     time.sleep(0.4)
                                     print(f"Rerolling game queue based on new filter...")
                                     time.sleep(1)
