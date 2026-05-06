@@ -269,10 +269,13 @@ def print_game_image(file_path,app_id,img_path,title):
         image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
         rows = image.split('\n')
         print()
-        for index, row in enumerate(rows):
-            print(f'{row}\033[0m')
-            if index >= 11: break
-        print()
+        if len(rows) > 13:
+            for index, row in enumerate(rows):
+                if index >= 13: break
+                print(f'{row}')
+        else:
+            print(image)
+        
     except:
         print("Game image not found.")
 
