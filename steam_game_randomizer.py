@@ -14,8 +14,8 @@ def main():
     try:
         show_images, show_developers,show_publishers,show_genres,show_release_date,show_description = settings.load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description)    
     except Exception as e:
-        print(f"Unable to load settings with error {e}. Using default values.")
-
+        clear_terminal; print(f"Unable to load settings with error {e}. Using default values.")
+        time.sleep(2)
     get_games(file_path,api_key,user_id)
     permanently_excluded_split,all_game_details,game_num = parse_game_data(file_path, permanently_excluded)
 
@@ -28,6 +28,9 @@ def main():
     elif choice.lower() == 'g':
         refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all=False)
     while 1:
+        game_selections.show_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,file_path,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description)
+class game_selections:
+    def show_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,file_path,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description):
         current_filter = settings.current_filter;current_playtime_threshold = settings.current_playtime_threshold
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description,playtime_2weeks,playtime_2weeks_HR = randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,current_filter,current_playtime_threshold)
         if show_images == True: print_game_image(file_path,app_id,img_path,title)
@@ -62,7 +65,6 @@ def main():
                 print(textwrap.fill(short_description, width=80))
         if len(title) > 65:
             title = title[0:65]+'..'        
-
         print(f'''{"-" * 80}
 [ENTER] Reroll   [R] Reroll Queue   [V] View On Steam 
 [C] Exclusions   [X] Exclude Perm   [Z] Exclude Session
@@ -71,7 +73,6 @@ def main():
         choice = input("Choice: ")
 
         if_go_back = False; reroll_queue = False
-
         if choice.lower() == 'run': #launch game
             try:
                 subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
