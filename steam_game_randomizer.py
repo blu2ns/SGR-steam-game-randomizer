@@ -7,7 +7,7 @@ class game_selections:
     show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
     file_path = ''; img_path = ''; permanently_excluded = []; temporarily_excluded = []
     def __init__(self):
-        game_selections.file_path,game_selections.img_path = self.create_storage_files()
+        game_selections.file_path,game_selections.img_path = game_selections.create_storage_files()
         with open(f'{game_selections.file_path}exclusion_list.json', 'r') as exclusion_file: 
             exclusion_data = json.load(exclusion_file) 
             game_selections.permanently_excluded = exclusion_data['permanently_excluded']
@@ -257,7 +257,7 @@ class game_selections:
 
         elif choice.lower() == 's': #view settings
             pre_filter = settings.current_filter; pre_playtime_threshold = settings.current_playtime_threshold
-            show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games)
+            show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games = settings.view_settings(file_path,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games)
             if pre_filter != settings.current_filter or pre_playtime_threshold != settings.current_playtime_threshold:
                 reroll_queue = True
         
@@ -286,11 +286,9 @@ class game_selections:
         try: 
             image = climage.convert(img_path,is_unicode=True, is_truecolor=True, is_256color=False, width=80)
             rows = image.split('\n')
-            print()
             for index, row in enumerate(rows):
                 print(f'{row}\033[0m')
                 if index >= 11: break
-            print()
         except:
             print("Game image not found.")
 
@@ -672,12 +670,12 @@ class settings:
     current_filter = "default"
     current_playtime_threshold = 120
 
-    def view_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
+    def view_settings(file_path,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
         if os.path.exists(f'{file_path}settings.json') == True: 
             general.clear_terminal()
             print(f"{'-'*6}   Settings   {'-'*6}")
             
-            setting_list = [["Show Game Images",show_images], ["Show Developer(s)",show_developers], ["Show Publisher(s)",show_publishers],["Show Genre(s)",show_genres],["Show Release Date",show_release_date],["Show Description",show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
+            setting_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
             for setting in range(len(setting_list)):
                 print(f'{setting}) {setting_list[setting][0]}: {settings.bool_to_symbol(setting_list[setting][1])}')
                 if setting_list[setting][1] == "default" or setting_list[setting][1] == "norecent":
@@ -685,7 +683,7 @@ class settings:
                     break
             choice = None
             try: choice = int(input(f"[0-{len(setting_list)-2}] Toggle Setting [ENTER] Return\n"))
-            except: return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games
+            except: return game_selections.show_images,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description, randomized_game_list, previous_games
             if -1 < choice <= len(setting_list):
                 try:
                     if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Threshold" :
@@ -806,7 +804,8 @@ class general:
         
 if __name__ == "__main__":
     try:
-       game_selections.main(game_selections)
+       inst = game_selections()
+       inst.main()
     except KeyboardInterrupt:
         print("\nExiting.")
         exit()
