@@ -64,7 +64,9 @@ class game_selections:
                 print("-" * 80)
                 print(textwrap.fill(short_description, width=80))
         if len(title) > 65:
-            title = title[0:65]+'..'        
+            title = title[0:65]+'..'  
+        game_selections.get_input_choice(title,app_id,file_path,all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description)
+    def get_input_choice(title,app_id,file_path,all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description):      
         print(f'''{"-" * 80}
 [ENTER] Reroll   [R] Reroll Queue   [V] View On Steam 
 [C] Exclusions   [X] Exclude Perm   [Z] Exclude Session
@@ -244,6 +246,7 @@ class game_selections:
             show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games = settings.view_settings(file_path,show_images, show_developers,show_publishers,show_genres,show_release_date,show_description,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games)
             if pre_filter != settings.current_filter or pre_playtime_threshold != settings.current_playtime_threshold:
                 reroll_queue = True
+            return show_images,show_developers,show_publishers,show_genres,show_release_date,show_description, randomized_game_list, previous_games
         elif choice.lower() == 'e': #exit
             exit()
 
