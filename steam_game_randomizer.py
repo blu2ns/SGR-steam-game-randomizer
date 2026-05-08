@@ -5,24 +5,23 @@ from pathlib import Path
 class game_selections:
     api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
     show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
-    file_path = ''; img_path = ''; permanently_excluded = []; temporarily_excluded = []
-    def __init__(self):
+    file_path = ''; img_path = ''; permanently_excluded = []; temporarily_excluded = [] 
+    @staticmethod
+    def main():
         game_selections.file_path,game_selections.img_path = game_selections.create_storage_files()
         with open(f'{game_selections.file_path}exclusion_list.json', 'r') as exclusion_file: 
             exclusion_data = json.load(exclusion_file) 
             game_selections.permanently_excluded = exclusion_data['permanently_excluded']
-            game_selections.temporarily_excluded = ""  
-   
-    def main(self):
+            game_selections.temporarily_excluded = "" 
         try:
-            self.show_images, self.show_developers,self.show_publishers,self.show_genres,self.show_release_date,self.show_description = settings.load_settings(self.file_path,self.show_images,self.show_developers,self.show_publishers,self.show_genres,self.show_release_date,self.show_description)    
+            game_selections.show_images, game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description = settings.load_settings(game_selections.file_path,game_selections.show_images,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description)    
         except Exception as e:
             general.clear_terminal()
             print(f"Unable to load settings with error {e}. Using default values.")
             time.sleep(2)
 
-        game_selections.get_games(self.file_path,self.api_key,self.user_id)
-        permanently_excluded_split,all_game_details,game_num = game_selections.parse_game_data(self.file_path, self.permanently_excluded)
+        game_selections.get_games(game_selections.file_path,game_selections.api_key,game_selections.user_id)
+        permanently_excluded_split,all_game_details,game_num = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
 
         if_go_back = False; reroll_queue = False
         general.clear_terminal()
@@ -30,12 +29,12 @@ class game_selections:
 
         choice = input("Refresh game image cache? This step is only necessary to do once.\nIt may take a while but rolls will happen faster after.\n[R] Refresh all images [G] Get missing images [Other] Continue without refresh.\n")
         if choice.lower() == 'r':
-            game_selections.refresh_img_cache(self.file_path,self.img_path,all_game_details,self.permanently_excluded,refresh_all=True)
+            game_selections.refresh_img_cache(game_selections.file_path,game_selections.img_path,all_game_details,game_selections.permanently_excluded,refresh_all=True)
         elif choice.lower() == 'g':
-            game_selections.refresh_img_cache(self.file_path,self.img_path,all_game_details,self.permanently_excluded,refresh_all=False)
+            game_selections.refresh_img_cache(game_selections.file_path,game_selections.img_path,all_game_details,game_selections.permanently_excluded,refresh_all=False)
         while 1:
-            game_selections.show_game(all_game_details,self.permanently_excluded,self.temporarily_excluded,if_go_back,reroll_queue,self.randomized_game_list,self.previous_games,self.file_path,self.show_images,self.img_path,self.show_developers,self.show_publishers,self.show_genres,self.show_release_date,self.show_description)
-        
+            game_selections.show_game(all_game_details,game_selections.permanently_excluded,game_selections.temporarily_excluded,if_go_back,reroll_queue,game_selections.randomized_game_list,game_selections.previous_games,game_selections.file_path,game_selections.show_images,game_selections.img_path,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description)
+    @staticmethod        
     def show_game(all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,file_path,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description):
         current_filter = settings.current_filter;current_playtime_threshold = settings.current_playtime_threshold
         title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description,playtime_2weeks,playtime_2weeks_HR = game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded,if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,current_filter,current_playtime_threshold)
@@ -72,7 +71,7 @@ class game_selections:
         if len(title) > 65:
             title = title[0:65]+'..'  
         game_selections.get_input_choice(title,app_id,file_path,all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description)
-    
+    @staticmethod
     def get_input_choice(title,app_id,file_path,all_game_details,permanently_excluded,temporarily_excluded,if_go_back,reroll_queue,randomized_game_list,previous_games,show_images,img_path,show_developers,show_publishers,show_genres,show_release_date,show_description):      
         print(f'''{"-" * 80}
 [ENTER] Reroll   [R] Reroll Queue   [V] View On Steam 
@@ -263,7 +262,7 @@ class game_selections:
         
         elif choice.lower() == 'e': #exit
             exit()
-
+    @staticmethod
     def print_game_image(file_path,app_id,img_path,title):
         img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
         if os.path.exists(img_path) != True:
@@ -291,7 +290,7 @@ class game_selections:
                 if index >= 11: break
         except:
             print("Game image not found.")
-
+    @staticmethod
     def refresh_img_cache(file_path,img_path,all_game_details,permanently_excluded,refresh_all):
         game_selections.parse_game_data(file_path,permanently_excluded)
         images_added = 0
@@ -322,7 +321,7 @@ class game_selections:
                 print(f"Game image and backup game image for {title} not found.")
         #this sometimes has an inaccurate number?
         input(f"{images_added} new images successfully cached. [Enter] Continue\n")
-
+    @staticmethod
     def parse_game_data(file_path,permanently_excluded):
         try:
             with open(f'{file_path}last_game_data.json', 'r') as game_file: 
@@ -351,7 +350,7 @@ class game_selections:
         permanently_excluded_split = permanently_excluded.split('|')
         all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
         return permanently_excluded_split, all_game_details,game_num
-
+    @staticmethod
     def get_games(file_path,api_key,user_id):
         choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YS] Refresh Game Cache & Store Details \n[YSM] Refresh Game Cache & missing Store Details\n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
         
@@ -476,7 +475,7 @@ class game_selections:
             general.clear_terminal()
             game_selections.create_keyids(file_path)
             game_selections.get_games(file_path,api_key,user_id)
-
+    @staticmethod
     def create_storage_files():
         
         file_path = Path(__file__).resolve().parent
@@ -538,7 +537,7 @@ class game_selections:
                 exit()
         
         return file_path,img_path
-
+    @staticmethod
     def create_keyids(file_path):
         general.clear_terminal()
         api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
@@ -563,7 +562,7 @@ class game_selections:
         print(f"Stored credentials at {file_path}keyids.json.")
         time.sleep(2.5)
         general.clear_terminal()
-
+    @staticmethod
     def randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,filter_type,playtime_threshold):
         if len(randomized_game_list) == 0 or reroll_queue == True:
             if filter_type == "default":
@@ -669,7 +668,7 @@ class settings:
     #'default', 'norecent', 'playtime'
     current_filter = "default"
     current_playtime_threshold = 120
-
+    @staticmethod
     def view_settings(file_path,all_game_details, permanently_excluded, temporarily_excluded,randomized_game_list, previous_games):
         if os.path.exists(f'{file_path}settings.json') == True: 
             general.clear_terminal()
@@ -750,7 +749,7 @@ class settings:
                     input()
                 
             return setting_list[0][1], setting_list[1][1], setting_list[2][1], setting_list[3][1], setting_list[4][1], setting_list[5][1], randomized_game_list, previous_games
-
+    @staticmethod
     def load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         try:
             if os.path.exists(f'{file_path}settings.json') == True: 
@@ -769,7 +768,7 @@ class settings:
             return game_selections.show_images,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description
         except Exception as e:
             print(f"Unable to load settings with error {e}. Try deleting the file and recreating it if the error continues.")
-            
+    @staticmethod      
     def bool_to_symbol(val): 
         if isinstance(val, bool):
             return '✓' if val else '✗'
@@ -789,8 +788,11 @@ class settings:
             return val
         
 class general:
+    @staticmethod
     def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
+    @staticmethod
     def printw(text): print(textwrap.fill(text, width=80))
+    @staticmethod
     def time_convert(timeint):
         if timeint >= 60:
             hours = timeint // 60
@@ -804,8 +806,7 @@ class general:
         
 if __name__ == "__main__":
     try:
-       inst = game_selections()
-       inst.main()
+        game_selections.main()
     except KeyboardInterrupt:
         print("\nExiting.")
         exit()
