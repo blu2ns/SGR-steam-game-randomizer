@@ -116,8 +116,8 @@ class game_selections:
         elif choice.lower() == 'c': #see list of excluded games
             general.clear_terminal()
             print("-" * 80)
-            permanently_excluded_split = permanently_excluded.split('|')
-            temporarily_excluded_split = temporarily_excluded.split('|')
+            permanently_excluded_split = permanently_excluded.split('\x1F')
+            temporarily_excluded_split = temporarily_excluded.split('\x1F')
 
             if permanently_excluded_split[0] != '':
                 print("List of permanently excluded items:")
@@ -176,17 +176,17 @@ class game_selections:
                             if pool_choice == 't': 
                                 if temporarily_excluded_split[number_choice] != '':
                                     removed_title = temporarily_excluded_split.pop(number_choice)
-                                    temporarily_excluded = '|'.join(temporarily_excluded_split)
+                                    temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
                                     game_selections.temporarily_excluded = temporarily_excluded
                                     general.clear_terminal()
                                     print(f"{removed_title} removed.")
                                     time.sleep(1)
                                 else: print("No game located at that position.")
                             else: 
-                                permanently_excluded_split = permanently_excluded.split('|')
+                                permanently_excluded_split = permanently_excluded.split('\x1F')
                                 if permanently_excluded_split[number_choice] != '':
                                     removed_title = permanently_excluded_split.pop(number_choice)
-                                    permanently_excluded = "|".join(permanently_excluded_split)
+                                    permanently_excluded = "\x1F".join(permanently_excluded_split)
                                     game_selections.permanently_excluded = permanently_excluded
                                     with open(f'{file_path}exclusion_list.json','w') as file:
                                         data = {
@@ -226,21 +226,19 @@ class game_selections:
     
     @staticmethod
     def exclude_game(exclusion_type,title):
-        THIS WORKS, IT JUST DOESN'T PROPERLY RETURN THE VALUES
         general.clear_terminal()
-
-        var_list = [[game_selections.permanently_excluded,"permanently"],[game_selections.permanently_excluded,"temporarily"]]
-
-        if title in var_list[exclusion_type][0].split():
+        var_list = [[game_selections.permanently_excluded,"permanently","permanently_excluded"],[game_selections.permanently_excluded,"temporarily","temporarily_excluded"]]
+        print(var_list[exclusion_type][0].split('\x1F'))
+        if title in var_list[exclusion_type][0].split('\x1F'):
             print(f"Game is already in selected exclusion list.")
         else:
             print(f"{title} excluded {var_list[exclusion_type][1]}.")
 
             if var_list[exclusion_type][0] != "":
-                var_list[exclusion_type][0] = str(var_list[exclusion_type][0]) + "|" + str(title)
+                var_list[exclusion_type][0] = str(var_list[exclusion_type][0]) + "\x1F" + str(title)
             else:
                 var_list[exclusion_type][0] = title
-            setattr(game_selections, var_list[exclusion_type][0], var_list[exclusion_type][0])
+            setattr(game_selections, var_list[exclusion_type][2], var_list[exclusion_type][0])
             if exclusion_type == 0:
                 with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
                     data = {
@@ -344,7 +342,7 @@ class game_selections:
             except:
                 break
 
-        permanently_excluded_split = permanently_excluded.split('|')
+        permanently_excluded_split = permanently_excluded.split('\x1F')
         all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
         return permanently_excluded_split, all_game_details,game_num
     
@@ -609,8 +607,8 @@ class game_selections:
                         game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
                     else:
                         exit()
-        permanently_excluded_split = permanently_excluded.split('|')
-        temporarily_excluded_split = temporarily_excluded.split('|')
+        permanently_excluded_split = permanently_excluded.split('\x1F')
+        temporarily_excluded_split = temporarily_excluded.split('\x1F')
 
         game_choice = []
         general.clear_terminal()
