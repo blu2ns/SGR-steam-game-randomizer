@@ -559,47 +559,7 @@ class game_selections:
         if len(randomized_game_list) == 0 or reroll_queue == True:
             print("Rerolling queue...")
             time.sleep(0.2)
-            if filter_type == "default":
-                randomized_game_list = all_game_details.copy()
-                random.shuffle(randomized_game_list)
-            elif filter_type == "playtime":
-                try:
-                    randomized_game_list = all_game_details.copy()
-                    random.shuffle(randomized_game_list)
-                    temp_randomized_game_list = []
-                    for game in range(len(randomized_game_list)):
-                        try:
-                            if int(randomized_game_list[game][1]) <= playtime_threshold:
-                                temp_randomized_game_list.append(randomized_game_list[game])
-                        except Exception as e:
-                            pass
-                
-                    randomized_game_list = temp_randomized_game_list.copy()
-                except Exception as e:
-                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
-                    if choice.lower() == 'y':
-                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
-                    else:
-                        exit()
-            elif filter_type == "norecent":
-                try:
-                    randomized_game_list = all_game_details.copy()
-                    random.shuffle(randomized_game_list)
-                    temp_randomized_game_list = []
-                    for game in range(len(randomized_game_list)):
-                        try:
-                            if int(randomized_game_list[game][5]) == 0:
-                                temp_randomized_game_list.append(randomized_game_list[game])
-                        except Exception as e:
-                            pass
-                
-                    randomized_game_list = temp_randomized_game_list.copy()
-                except Exception as e:
-                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
-                    if choice.lower() == 'y':
-                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
-                    else:
-                        exit()
+            game_selections.shuffle_games()
         permanently_excluded_split = permanently_excluded.split('\x1F')
         temporarily_excluded_split = temporarily_excluded.split('\x1F')
 
@@ -658,14 +618,61 @@ class game_selections:
             pass
         return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
+    def shuffle_games():
+        #TODO: MERGE THESE TO REDUCE REPEATED CODE
+        randomized_game_list = all_game_details.copy()
+        random.shuffle(randomized_game_list)        
+        match settings.current_filter:
+            case 'playtime':
+                try:
+                    temp_randomized_game_list = []
+                    for game in range(len(randomized_game_list)):
+                        try:
+                            if int(randomized_game_list[game][1]) <= playtime_threshold:
+                                temp_randomized_game_list.append(randomized_game_list[game])
+                        except Exception as e:
+                            pass
+                
+                    randomized_game_list = temp_randomized_game_list.copy()
+                except Exception as e:
+                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
+                    if choice.lower() == 'y':
+                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
+                    else:
+                        exit()
+            case 'norecent':
+        
+                try:
+                    temp_randomized_game_list = []
+                    for game in range(len(randomized_game_list)):
+                        try:
+                            if int(randomized_game_list[game][5]) == 0:
+                                temp_randomized_game_list.append(randomized_game_list[game])
+                        except Exception as e:
+                            pass
+                
+                    randomized_game_list = temp_randomized_game_list.copy()
+                except Exception as e:
+                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
+                    if choice.lower() == 'y':
+                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
+                    else:
+                        exit()
 class settings: 
     #'default', 'norecent', 'playtime'
     current_filter = "default"
     current_playtime_threshold = 120
     #what is displayed to the user, variable
-    settings_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",current_filter],["Playtime Threshold",current_playtime_threshold]]
+    settings_list = [
+        ["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers],["Show Publisher(s)",game_selections.show_publishers],
+        ["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],
+        ["Current Filter",current_filter],["Playtime Threshold",current_playtime_threshold]
+        ]
     #name,description,how it is stored
-    filter_list = [["Default", "No games filtered out.", "default"],["No Recent Games", "No games played in the last 2 weeks shown.", "norecent"],["Low Played Games", "No games with playtime above _ mins. Current: {} mins.", "playtime"]]
+    filter_list = [["Default", "No games filtered out.", "default"],
+        ["No Recent Games", "No games played in the last 2 weeks shown.", "norecent"],
+        ["Low Played Games", "No games with playtime above _ mins. Current: {} mins.", "playtime"]
+    ]
                     
     @staticmethod
     def view_settings(file_path, all_game_details, permanently_excluded, temporarily_excluded):
