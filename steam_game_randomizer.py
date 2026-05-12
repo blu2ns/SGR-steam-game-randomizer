@@ -3,10 +3,10 @@ from pathlib import Path
 
 
 class game_selections:
-    api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []
+    api_key = ""; user_id = ""; randomized_game_list = []; previous_games = []; permanently_excluded = []; temporarily_excluded = [] 
     show_images = True; show_developers = True; show_publishers = True; show_genres = True; show_release_date = True; show_description = True
-    file_path = ''; img_path = ''; permanently_excluded = []; temporarily_excluded = [] 
-    all_game_details = []; if_go_back = False; reroll_queue = False
+    file_path = ''; img_path = ''; all_game_details = []; if_go_back = False; reroll_queue = False; 
+
     @staticmethod
     def main():
         game_selections.file_path,game_selections.img_path = game_selections.create_storage_files()
@@ -32,6 +32,7 @@ class game_selections:
             game_selections.refresh_img_cache(game_selections.file_path,game_selections.img_path,game_selections.all_game_details,game_selections.permanently_excluded,refresh_all=True)
         elif choice.lower() == 'g':
             game_selections.refresh_img_cache(game_selections.file_path,game_selections.img_path,game_selections.all_game_details,game_selections.permanently_excluded,refresh_all=False)
+        
         while 1:
             game_selections.show_game()
     
@@ -539,7 +540,6 @@ class game_selections:
         general.clear_terminal()
         print("User ID added.")
         time.sleep(2)
-        general.clear_terminal()
 
         with open(f'{file_path}keyids.json', 'w') as file: 
             data = {
@@ -547,6 +547,7 @@ class game_selections:
                 "user_id": f"{user_id}"
             }
             json.dump(data,file,indent=4)
+
         general.clear_terminal()
         print(f"Stored credentials at {file_path}keyids.json.")
         time.sleep(2.5)
@@ -660,49 +661,36 @@ class settings:
     #'default', 'norecent', 'playtime'
     current_filter = "default"
     current_playtime_threshold = 120
+
     @staticmethod
     def view_settings(file_path, all_game_details, permanently_excluded, temporarily_excluded):
         if os.path.exists(f'{file_path}settings.json') == True: 
             general.clear_terminal()
             print(f"{'-'*6}   Settings   {'-'*6}")
-            
-            setting_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
-            for setting in range(len(setting_list)):
-                print(f'{setting}) {setting_list[setting][0]}: {settings.bool_to_symbol(setting_list[setting][1])}')
-                if setting_list[setting][1] == "default" or setting_list[setting][1] == "norecent":
-                    setting_list[setting + 1].pop()
-                    break
+
+            settings_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
+            for setting in range(len(settings_list)):
+                print(f'{setting}) {settings_list[setting][0]}: {settings.bool_to_symbol(settings_list[setting][1])}')
+                
             choice = None
-            try: choice = int(input(f"[0-{len(setting_list)-2}] Toggle Setting [ENTER] Return\n"))
+            try: choice = int(input(f"[0-{len(settings_list)-2}] Toggle Setting [ENTER] Return\n"))
             except: 
-                game_selections.show_images = setting_list[0][1]; game_selections.show_developers = setting_list[1][1]
-                game_selections.show_publishers = setting_list[2][1]; game_selections.show_genres = setting_list[3][1]
-                game_selections.show_release_date = setting_list[4][1]; game_selections.show_description = setting_list[5][1]
+                game_selections.show_images = settings_list[0][1]; game_selections.show_developers = settings_list[1][1]
+                game_selections.show_publishers = settings_list[2][1]; game_selections.show_genres = settings_list[3][1]
+                game_selections.show_release_date = settings_list[4][1]; game_selections.show_description = settings_list[5][1]
                 return
-            if -1 < choice <= len(setting_list):
+            
+            if -1 < choice <= len(settings_list):
                 try:
-                    if setting_list[choice][0] != "Current Filter" and setting_list[choice][0] != "Playtime Threshold" :
-                        setting_list[choice][1] = not setting_list[choice][1]
+                    if settings_list[choice][0] != "Current Filter" and settings_list[choice][0] != "Playtime Threshold":
+                        settings_list[choice][1] = not settings_list[choice][1]
                         general.clear_terminal()
-                        print(f"{settings.bool_to_symbol(not setting_list[choice][1])} changed to {settings.bool_to_symbol(setting_list[choice][1])} for {setting_list[choice][0]}.")
+                        print(f"{settings.bool_to_symbol(not settings_list[choice][1])} changed to {settings.bool_to_symbol(settings_list[choice][1])} for {settings_list[choice][0]}.")
                         time.sleep(1)
-                    elif setting_list[choice][0] == 'Playtime Threshold':
-                        general.clear_terminal()
-                        try: 
-                            num = int(input(f"Input Playtime threshold in minutes. Low Played Games will hide games with\nplaytime above this number. Current: {settings.current_playtime_threshold} mins.\n"))
-                            if isinstance(num,int) and num >= 0:
-                                settings.current_playtime_threshold = num
-                                general.clear_terminal()
-                                print(f"Playtime threshold changed to {num} mins.")
-                                time.sleep(1.5) 
-                            else:
-                                print("Invalid input")
-                                time.sleep(2)
-                        except Exception as e: 
-                            print(f"Error: {e}")
-                            time.sleep(2)
+                    elif settings_list[choice][0] == 'Playtime Threshold':
+                        settings.change_playtime_threshold()
                     else:
-                        if setting_list[choice][0] == "Current Filter":
+                        if settings_list[choice][0] == "Current Filter":
                             previous_filter = settings.current_filter
                             #name,description,how it is stored
                             filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","playtime"]]
@@ -727,27 +715,53 @@ class settings:
                         else:
                             choice = input("Input playtime threshold number")
 
-                    with open(f'{file_path}settings.json', 'w') as file: 
-                        data = {
-                            "show_images": setting_list[0][1],
-                            "show_developers": setting_list[1][1],
-                            "show_publishers": setting_list[2][1],
-                            "show_genres": setting_list[3][1],
-                            "show_release_date": setting_list[4][1],
-                            "show_description": setting_list[5][1],
-                            "current_filter": settings.current_filter,
-                            "current_playtime_threshold": settings.current_playtime_threshold
-                        }
-                        json.dump(data,file,indent=4)   
-
+                    settings.save_settings(settings_list)
                 except Exception as e:
                     print(f"Unable to save settings with error {e}.")
                     input()
                 
-            game_selections.show_images = setting_list[0][1]; game_selections.show_developers = setting_list[1][1]
-            game_selections.show_publishers = setting_list[2][1]; game_selections.show_genres = setting_list[3][1]
-            game_selections.show_release_date = setting_list[4][1]; game_selections.show_description = setting_list[5][1]
+            game_selections.show_images = settings_list[0][1]; game_selections.show_developers = settings_list[1][1]
+            game_selections.show_publishers = settings_list[2][1]; game_selections.show_genres = settings_list[3][1]
+            game_selections.show_release_date = settings_list[4][1]; game_selections.show_description = settings_list[5][1]
+        else: print("Settings file not found."); time.sleep(2)
     
+    @staticmethod
+    def save_settings(settings_list):
+        try:
+            with open(f'{game_selections.file_path}settings.json', 'w') as file: 
+                data = {
+                    "show_images": settings_list[0][1],
+                    "show_developers": settings_list[1][1],
+                    "show_publishers": settings_list[2][1],
+                    "show_genres": settings_list[3][1],
+                    "show_release_date": settings_list[4][1],
+                    "show_description": settings_list[5][1],
+                    "current_filter": settings.current_filter,
+                    "current_playtime_threshold": settings.current_playtime_threshold
+                }
+                json.dump(data,file,indent=4)   
+        except Exception as e:
+            print(f"Unable to save settings with error {e}")
+            time.sleep(3)
+
+    @staticmethod
+    def change_playtime_threshold():
+        general.clear_terminal()
+        try: 
+            num = int(input(f"Input Playtime threshold in minutes. Low Played Games will hide games with\nplaytime above this number. Current: {settings.current_playtime_threshold} mins.\n"))
+            if isinstance(num,int) and num >= 0:
+                settings.current_playtime_threshold = num
+                general.clear_terminal()
+                print(f"Playtime threshold changed to {num} mins.")
+                time.sleep(1.5) 
+            else:
+                print("Invalid input")
+                time.sleep(2)
+                
+        except Exception as e: 
+            print(f"Error: {e}")
+            time.sleep(2)
+
     @staticmethod
     def load_settings(file_path,show_images,show_developers,show_publishers,show_genres,show_release_date,show_description):
         try:
@@ -769,23 +783,24 @@ class settings:
             print(f"Unable to load settings with error {e}. Try deleting the file and recreating it if the error continues.")
     
     @staticmethod      
-    def bool_to_symbol(val): 
-        if isinstance(val, bool):
-            return '✓' if val else '✗'
-        elif isinstance(val, int):
-            return general.time_convert(val)
-        elif isinstance(val, str):
-            match val:
-                case "default":
-                   return "Default"
-                case "norecent":
-                    return "No Recent Games"
-                case "playtime":
-                    return "Less than _ Playtime"
-                case _:
-                    return val
-        else:
-            return val
+    def bool_to_symbol(input): 
+        match input:
+            case bool():
+                return '✓' if input else '✗'
+            case int():
+                return general.time_convert(input)
+            case str():
+                match input:
+                    case "default":
+                        return "Default"
+                    case "norecent":
+                        return "No Recent Games"
+                    case "playtime":
+                        return "Less than _ Playtime"
+                    case _:
+                        return input
+            case _:
+                return input
         
 class general:
     @staticmethod
