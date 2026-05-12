@@ -661,48 +661,51 @@ class settings:
     #'default', 'norecent', 'playtime'
     current_filter = "default"
     current_playtime_threshold = 120
-
+    #what is displayed to the user, variable
+    settings_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",current_filter],["Playtime Threshold",current_playtime_threshold]]
+    #name,description,how it is stored
+    filter_list = [["Default", "No games filtered out.", "default"],["No Recent Games", "No games played in the last 2 weeks shown.", "norecent"],["Low Played Games", "No games with playtime above _ mins. Current: {} mins.", "playtime"]]
+                    
     @staticmethod
     def view_settings(file_path, all_game_details, permanently_excluded, temporarily_excluded):
         if os.path.exists(f'{file_path}settings.json') == True: 
             general.clear_terminal()
             print(f"{'-'*6}   Settings   {'-'*6}")
 
-            settings_list = [["Show Game Images",game_selections.show_images], ["Show Developer(s)",game_selections.show_developers], ["Show Publisher(s)",game_selections.show_publishers],["Show Genre(s)",game_selections.show_genres],["Show Release Date",game_selections.show_release_date],["Show Description",game_selections.show_description],["Current Filter",settings.current_filter],["Playtime Threshold",settings.current_playtime_threshold]]
-            for setting in range(len(settings_list)):
-                print(f'{setting}) {settings_list[setting][0]}: {settings.bool_to_symbol(settings_list[setting][1])}')
+            for setting in range(len(settings.settings_list)):
+                print(f'{setting}) {settings.settings_list[setting][0]}: {settings.bool_to_symbol(settings.settings_list[setting][1])}')
                 
             choice = None
-            try: choice = int(input(f"[0-{len(settings_list)-2}] Toggle Setting [ENTER] Return\n"))
+            try: choice = int(input(f"[0-{len(settings.settings_list)-2}] Toggle Setting [ENTER] Return\n"))
             except: 
-                game_selections.show_images = settings_list[0][1]; game_selections.show_developers = settings_list[1][1]
-                game_selections.show_publishers = settings_list[2][1]; game_selections.show_genres = settings_list[3][1]
-                game_selections.show_release_date = settings_list[4][1]; game_selections.show_description = settings_list[5][1]
+                game_selections.show_images = settings.settings_list[0][1]; game_selections.show_developers = settings.settings_list[1][1]
+                game_selections.show_publishers = settings.settings_list[2][1]; game_selections.show_genres = settings.settings_list[3][1]
+                game_selections.show_release_date = settings.settings_list[4][1]; game_selections.show_description = settings.settings_list[5][1]
                 return
             
-            if -1 < choice <= len(settings_list):
+            if -1 < choice <= len(settings.settings_list):
                 try:
-                    if settings_list[choice][0] != "Current Filter" and settings_list[choice][0] != "Playtime Threshold":
-                        settings_list[choice][1] = not settings_list[choice][1]
-                        general.clear_terminal()
-                        print(f"{settings.bool_to_symbol(not settings_list[choice][1])} changed to {settings.bool_to_symbol(settings_list[choice][1])} for {settings_list[choice][0]}.")
-                        time.sleep(1)
-                    elif settings_list[choice][0] == 'Playtime Threshold':
-                        settings.change_playtime_threshold()
-                    else:
-                        if settings_list[choice][0] == "Current Filter":
-                            previous_filter = settings.current_filter
-                            #name,description,how it is stored
-                            filter_list = [["Default","No games filtered out.","default"],["No Recent Games","No games played in the last 2 weeks shown.","norecent"],["Low Played Games",f"No games with playtime above _ playtime. Current: {settings.current_playtime_threshold} mins.","playtime"]]
+                    setting_name = settings.settings_list[choice][0]
+                    match setting_name:
+                        case 'Playtime Threshold':
+                            settings.change_playtime_threshold(choice)
+                        case 'Current Filter':
                             general.clear_terminal()
+                            previous_filter = settings.current_filter
                             print(f"{'-'*6}   Filters   {'-'*6}")
-                            for filter in range(len(filter_list)):
-                                print(f"{filter}) {filter_list[filter][0]} - {filter_list[filter][1]}")
-                            filter_choice = input(f"[0-{len(filter_list) - 1}] Choose Filter Type [Other] Return\n")
+                            for filterindx in range(len(settings.filter_list)):
+                                name = settings.filter_list[filterindx][0]
+                                description = settings.filter_list[filterindx][1]
+                                
+                                if "{}" in description:
+                                    description = description.format(settings.current_playtime_threshold)
+                                print(f"{filterindx}) {name} - {description}")
+                            filter_choice = input(f"[0-{len(settings.filter_list) - 1}] Choose Filter Type [Other] Return\n")
+
                             try:
-                                if -1 < int(filter_choice) <= len(filter_list):
-                                    settings.current_filter = str(filter_list[int(filter_choice)][2])
-                                    
+                                if -1 < int(filter_choice) <= len(settings.filter_list):
+                                    settings.current_filter = str(settings.filter_list[int(filter_choice)][2])
+                                    settings.settings_list[choice][1] = settings.current_filter 
                                     general.clear_terminal()
                                     print(f"{previous_filter} changed to {settings.current_filter}.")
                                     time.sleep(0.4)
@@ -712,30 +715,37 @@ class settings:
                                     print("Invalid number.")
                             except ValueError:
                                 pass
-                        else:
-                            choice = input("Input playtime threshold number")
+                        case _:
+                            settings.change_misc_setting(choice=choice)
 
-                    settings.save_settings(settings_list)
+                    settings.save_settings()
                 except Exception as e:
-                    print(f"Unable to save settings with error {e}.")
-                    input()
+                    print(f"Unable to modify settings with error {e}.")
+                    time.sleep(3)
                 
-            game_selections.show_images = settings_list[0][1]; game_selections.show_developers = settings_list[1][1]
-            game_selections.show_publishers = settings_list[2][1]; game_selections.show_genres = settings_list[3][1]
-            game_selections.show_release_date = settings_list[4][1]; game_selections.show_description = settings_list[5][1]
+            game_selections.show_images = settings.settings_list[0][1]; game_selections.show_developers = settings.settings_list[1][1]
+            game_selections.show_publishers = settings.settings_list[2][1]; game_selections.show_genres = settings.settings_list[3][1]
+            game_selections.show_release_date = settings.settings_list[4][1]; game_selections.show_description = settings.settings_list[5][1]
         else: print("Settings file not found."); time.sleep(2)
     
     @staticmethod
-    def save_settings(settings_list):
+    def change_misc_setting(choice):
+        settings.settings_list[choice][1] = not settings.settings_list[choice][1]
+        general.clear_terminal()
+        print(f"{settings.bool_to_symbol(not settings.settings_list[choice][1])} changed to {settings.bool_to_symbol(settings.settings_list[choice][1])} for {settings.settings_list[choice][0]}.")
+        time.sleep(1)
+
+    @staticmethod
+    def save_settings():
         try:
             with open(f'{game_selections.file_path}settings.json', 'w') as file: 
                 data = {
-                    "show_images": settings_list[0][1],
-                    "show_developers": settings_list[1][1],
-                    "show_publishers": settings_list[2][1],
-                    "show_genres": settings_list[3][1],
-                    "show_release_date": settings_list[4][1],
-                    "show_description": settings_list[5][1],
+                    "show_images": settings.settings_list[0][1],
+                    "show_developers": settings.settings_list[1][1],
+                    "show_publishers": settings.settings_list[2][1],
+                    "show_genres": settings.settings_list[3][1],
+                    "show_release_date": settings.settings_list[4][1],
+                    "show_description": settings.settings_list[5][1],
                     "current_filter": settings.current_filter,
                     "current_playtime_threshold": settings.current_playtime_threshold
                 }
@@ -745,12 +755,13 @@ class settings:
             time.sleep(3)
 
     @staticmethod
-    def change_playtime_threshold():
+    def change_playtime_threshold(choice):
         general.clear_terminal()
         try: 
             num = int(input(f"Input Playtime threshold in minutes. Low Played Games will hide games with\nplaytime above this number. Current: {settings.current_playtime_threshold} mins.\n"))
             if isinstance(num,int) and num >= 0:
                 settings.current_playtime_threshold = num
+                settings.settings_list[choice][1] = settings.current_playtime_threshold
                 general.clear_terminal()
                 print(f"Playtime threshold changed to {num} mins.")
                 time.sleep(1.5) 
