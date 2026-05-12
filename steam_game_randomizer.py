@@ -38,13 +38,8 @@ class game_selections:
     @staticmethod        
     def show_game():
         current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
-        title, playtime, app_url, app_id, last_played, game_selections.randomized_game_list, game_selections.previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR = game_selections.randomize_game(
-            game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded,
-            game_selections.if_go_back, game_selections.reroll_queue,
-            game_selections.randomized_game_list, game_selections.previous_games,
-            game_selections.file_path, current_filter, current_playtime_threshold)
-        game_selections.if_go_back = False
-        game_selections.reroll_queue = False
+        title, playtime, app_url, app_id, last_played, game_selections.randomized_game_list, game_selections.previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded,game_selections.if_go_back, game_selections.reroll_queue,game_selections.randomized_game_list, game_selections.previous_games,game_selections.file_path, current_filter, current_playtime_threshold)
+        game_selections.if_go_back = False; game_selections.reroll_queue = False
         if game_selections.show_images == True: game_selections.print_game_image(game_selections.file_path, app_id, game_selections.img_path, title)
         
         print("-" * 80)
@@ -93,142 +88,138 @@ class game_selections:
 [RUN] Launch {title}''')
         choice = input("Choice: ")
 
-        if choice.lower() == 'run': #launch game
-            try:
-                subprocess.Popen(["steam", f"steam://rungameid/{app_id}"])
-            except Exception as e:
-                general.clear_terminal()
-                print(f"Unable to run {title} with error {e}.")
-                input("[Enter] Continue\n")
-        
-        elif choice.lower() == 'v': #see game page in desktop app:
-            try:
-                subprocess.Popen(['steam', f'steam://nav/games/details/{app_id}'])
-            except Exception as e:
-                general.clear_terminal()
-                print(f"Unable to open game page for {title} with error {e}.")
-                input("[Enter] Continue\n")
+        match choice: 
+            case 'run': #launch the game
+                game_selections.run_command(title=title,app_id=app_id,list_indx=0)
+            case 'v': #view in desktop app
+                game_selections.run_command(title=title,app_id=app_id,list_indx=1)
+            case 'x': #exclude game permanently
+                game_selections.exclude_game(exclusion_type=0,title=title) #permanent
+            case 'z': #exclude game temporarily
+                game_selections.exclude_game(exclusion_type=1,title=title) #temp
+            case 'c': #see list of excluded games
+                game_selections.view_excluded()
+            case 'b': #go back by one game
+                game_selections.if_go_back = True
+            case 'r': #reroll the roll queue
+                game_selections.reroll_queue = True
+            case 's': #view setttings
+                pre_filter = settings.current_filter; pre_playtime_threshold = settings.current_playtime_threshold
+                settings.view_settings(file_path, game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded)
+                if pre_filter != settings.current_filter or pre_playtime_threshold != settings.current_playtime_threshold:
+                    game_selections.reroll_queue = True        
+            case 'e': #exit
+                exit()
 
-        elif choice.lower() == 'x': #exclude game permanently
-            game_selections.exclude_game(exclusion_type=0,title=title) #permanent
-        elif choice.lower() == 'z': #exclude game temporarily
-            game_selections.exclude_game(exclusion_type=1,title=title) #temp
-        elif choice.lower() == 'c': #see list of excluded games
-            general.clear_terminal()
-            print("-" * 80)
-            permanently_excluded_split = permanently_excluded.split('\x1F')
-            temporarily_excluded_split = temporarily_excluded.split('\x1F')
+    @staticmethod
+    def view_excluded():
+        general.clear_terminal()
+        print("-" * 80)
+        permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
+        temporarily_excluded_split = game_selections.temporarily_excluded.split('\x1F')
 
-            if permanently_excluded_split[0] != '':
-                print("List of permanently excluded items:")
-                for n in range(len(permanently_excluded_split)):
-                    print(f"{n}) {permanently_excluded_split[n]}")
-                print('')
-            else:
-                print("No permanently excluded games.")
-            
-            if temporarily_excluded_split[0] != '':
-                print("List of temporarily excluded items:")
-                for n in range(len(temporarily_excluded_split)):
-                    print(f"{n}) {temporarily_excluded_split[n]}")
-            else:
-                print("No temporarily excluded games.")
+        if permanently_excluded_split[0] != '':
+            print("List of permanently excluded items:")
+            for n in range(len(permanently_excluded_split)):
+                print(f"{n}) {permanently_excluded_split[n]}")
             print('')
-            choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
-            
-            try: 
-                if choice != '':
-                    if choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
-                        try:
-                            pool_choice = choice[0]
-                            number_choice = int(choice[1:len(choice)])
-                        except:
-                            general.clear_terminal()
-                            print("Invalid Input. Try again later.")
-                            time.sleep(3)
-                    if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
-                        if choice[6] == 'p':
-                            permanently_excluded = ''
-                            permanently_excluded_split = []
-                            game_selections.permanently_excluded = permanently_excluded
-                            with open(f'{file_path}exclusion_list.json','w') as file:
-                                data = {
-                                    "permanently_excluded": f"{permanently_excluded}"
-                                }
-                                json.dump(data,file,indent=4)
-
-                            current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
-                            game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, file_path, current_filter, current_playtime_threshold)[5:7]
-                            print("Rerolled game queue based on new exclusion list.")
-                            time.sleep(1.5)                           
-                        elif choice[6] == 't':
-                            temporarily_excluded = ''
-                            temporarily_excluded_split = []
-                            game_selections.temporarily_excluded = temporarily_excluded
-
-                            current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
-                            game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, file_path, current_filter, current_playtime_threshold)[5:7]
-                            print("Rerolled game queue based on new exclusion list.")
-                            time.sleep(1.5)
-                        _, game_selections.all_game_details, _ = game_selections.parse_game_data(file_path, permanently_excluded)
-                    elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
-                        try:
-                            if pool_choice == 't': 
-                                if temporarily_excluded_split[number_choice] != '':
-                                    removed_title = temporarily_excluded_split.pop(number_choice)
-                                    temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
-                                    game_selections.temporarily_excluded = temporarily_excluded
-                                    general.clear_terminal()
-                                    print(f"{removed_title} removed.")
-                                    time.sleep(1)
-                                else: print("No game located at that position.")
-                            else: 
-                                permanently_excluded_split = permanently_excluded.split('\x1F')
-                                if permanently_excluded_split[number_choice] != '':
-                                    removed_title = permanently_excluded_split.pop(number_choice)
-                                    permanently_excluded = "\x1F".join(permanently_excluded_split)
-                                    game_selections.permanently_excluded = permanently_excluded
-                                    with open(f'{file_path}exclusion_list.json','w') as file:
-                                        data = {
-                                            "permanently_excluded": f"{permanently_excluded}"
-                                        }
-                                        json.dump(data,file,indent=4)
-                                    general.clear_terminal()
-                                    print(f"{removed_title} removed.")
-                                    time.sleep(1)
-                                else: print("No game located at that position.")
-                        except Exception as e:
-                            print(f"No game located at that position. {e}")
-                            time.sleep(4)
-                        _, game_selections.all_game_details, _ = game_selections.parse_game_data(file_path, permanently_excluded)
-                        time.sleep(1)
-                    else:
+        else:
+            print("No permanently excluded games.")
+        
+        if temporarily_excluded_split[0] != '':
+            print("List of temporarily excluded items:")
+            for n in range(len(temporarily_excluded_split)):
+                print(f"{n}) {temporarily_excluded_split[n]}")
+        else:
+            print("No temporarily excluded games.")
+        print('')
+        
+        choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
+        
+        try: 
+            if choice != '':
+                if choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
+                    try:
+                        pool_choice = choice[0]
+                        number_choice = int(choice[1:len(choice)])
+                    except:
+                        general.clear_terminal()
                         print("Invalid Input. Try again later.")
                         time.sleep(3)
-            except Exception as e:
-                print(f"Error: {e}")
-                time.sleep(3)
-        
-        elif choice.lower() == 'b': # go back by one game
-            game_selections.if_go_back = True
+                if choice[0:7].lower() == 'clear p' or choice[0:7].lower() == 'clear t':
+                    if choice[6] == 'p':
+                        game_selections.permanently_excluded = ''
+                        game_selections.permanently_excluded_split = []
+                        with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                            data = {
+                                "permanently_excluded": f"{game_selections.permanently_excluded}"
+                            }
+                            json.dump(data,file,indent=4)
 
-        elif choice.lower() == 'r': #reroll the roll queue
-            game_selections.reroll_queue = True
+                        current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
+                        game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, game_selections.file_path, current_filter, current_playtime_threshold)[5:7]
+                        print("Rerolled game queue based on new exclusion list.")
+                        time.sleep(1.5)
+                    elif choice[6] == 't':
+                        game_selections.temporarily_excluded = ''
+                        game_selections.temporarily_excluded_split = []
 
-        elif choice.lower() == 's': #view settings
-            pre_filter = settings.current_filter; pre_playtime_threshold = settings.current_playtime_threshold
-            settings.view_settings(file_path, game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded)
-            if pre_filter != settings.current_filter or pre_playtime_threshold != settings.current_playtime_threshold:
-                game_selections.reroll_queue = True
-        
-        elif choice.lower() == 'e': #exit
-            exit()
-    
+                        current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
+                        game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, game_selections.file_path, current_filter, current_playtime_threshold)[5:7]
+                        print("Rerolled game queue based on new exclusion list.")
+                        time.sleep(1.5)
+                    _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
+                elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
+                    try:
+                        if pool_choice == 't': 
+                            if temporarily_excluded_split[number_choice] != '':
+                                removed_title = temporarily_excluded_split.pop(number_choice)
+                                game_selections.temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
+                                general.clear_terminal()
+                                print(f"{removed_title} removed.")
+                                time.sleep(1)
+                            else: print("No game located at that position.")
+                        else: 
+                            permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
+                            if permanently_excluded_split[number_choice] != '':
+                                removed_title = permanently_excluded_split.pop(number_choice)
+                                game_selections.permanently_excluded = "\x1F".join(permanently_excluded_split)
+                                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                                    data = {
+                                        "permanently_excluded": f"{game_selections.permanently_excluded}"
+                                    }
+                                    json.dump(data,file,indent=4)
+                                general.clear_terminal()
+                                print(f"{removed_title} removed.")
+                                time.sleep(1)
+                            else: print("No game located at that position.")
+                    except Exception as e:
+                        print(f"No game located at that position. {e}")
+                        time.sleep(4)
+                    _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
+                    time.sleep(1)
+                else:
+                    print("Invalid Input. Try again later.")
+                    time.sleep(3)
+        except Exception as e:
+            print(f"Error: {e}")
+            time.sleep(3)
+
+    @staticmethod
+    def run_command(title,app_id,list_indx):
+        #TODO: test on a pc that has steam installed
+        command_list = [[f'steam://nav/games/details/{app_id}', f"run {title}"],[f"steam://rungameid/{app_id}", f"open game page for {title}"]]
+        try:
+            subprocess.Popen(['steam', str(command_list[list_indx][0])])
+        except Exception as e:
+            general.clear_terminal()
+            print(f"Unable to {str(command_list[list_indx][1])} with error: {e}.")
+            input("[Enter] Continue\n")
+
     @staticmethod
     def exclude_game(exclusion_type,title):
         general.clear_terminal()
         var_list = [[game_selections.permanently_excluded,"permanently","permanently_excluded"],[game_selections.permanently_excluded,"temporarily","temporarily_excluded"]]
-        print(var_list[exclusion_type][0].split('\x1F'))
         if title in var_list[exclusion_type][0].split('\x1F'):
             print(f"Game is already in selected exclusion list.")
         else:
