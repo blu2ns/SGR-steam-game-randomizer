@@ -110,54 +110,9 @@ class game_selections:
                 input("[Enter] Continue\n")
 
         elif choice.lower() == 'x': #exclude game permanently
-            general.clear_terminal()
-            
-            permanently_excluded_split = permanently_excluded.split('|')
-            if title in permanently_excluded_split:
-                print("Game already in exclusion list.")
-            else:
-                print(f"{title} excluded permanently.")
-                if permanently_excluded != "":
-                    permanently_excluded = str(permanently_excluded) + "|" + str(title)
-                else:
-                    permanently_excluded = title
-
-                game_selections.permanently_excluded = permanently_excluded
-                with open(f'{file_path}exclusion_list.json','w') as file:
-                    data = {
-                        "permanently_excluded": f"{permanently_excluded}"
-                    }
-                    json.dump(data,file,indent=4)
-                for game in range(len(all_game_details)):
-                    try:
-                        if all_game_details[game][0] == title:
-                            all_game_details.pop(game)
-                            break
-                    except Exception as e:
-                        print(f"Error {e}.")
-                        input()
-            time.sleep(1)
-        
+            game_selections.exclude_game(exclusion_type=0,title=title) #permanent
         elif choice.lower() == 'z': #exclude game temporarily
-            general.clear_terminal()
-            print(f"{title} excluded temporarily.")
-
-            if temporarily_excluded != "":
-                temporarily_excluded = str(temporarily_excluded) + "|" + str(title)
-            else:
-                temporarily_excluded = title
-
-            game_selections.temporarily_excluded = temporarily_excluded
-            for game in range(len(all_game_details)):
-                try:
-                    if all_game_details[game][0] == title:
-                        all_game_details.pop(game)
-                        break
-                except Exception as e:
-                    print(f"Error {e}.")
-                    input()
-            time.sleep(1)
-
+            game_selections.exclude_game(exclusion_type=1,title=title) #temp
         elif choice.lower() == 'c': #see list of excluded games
             general.clear_terminal()
             print("-" * 80)
@@ -268,8 +223,40 @@ class game_selections:
         
         elif choice.lower() == 'e': #exit
             exit()
-    #instead of only printing part of the image, maybe pre crop the image before it's saved? would probably fix artifact issues
     
+    @staticmethod
+    def exclude_game(exclusion_type,title):
+        THIS WORKS, IT JUST DOESN'T PROPERLY RETURN THE VALUES
+        general.clear_terminal()
+
+        var_list = [[game_selections.permanently_excluded,"permanently"],[game_selections.permanently_excluded,"temporarily"]]
+
+        if title in var_list[exclusion_type][0].split():
+            print(f"Game is already in selected exclusion list.")
+        else:
+            print(f"{title} excluded {var_list[exclusion_type][1]}.")
+
+            if var_list[exclusion_type][0] != "":
+                var_list[exclusion_type][0] = str(var_list[exclusion_type][0]) + "|" + str(title)
+            else:
+                var_list[exclusion_type][0] = title
+            setattr(game_selections, var_list[exclusion_type][0], var_list[exclusion_type][0])
+            if exclusion_type == 0:
+                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                    data = {
+                        f"{var_list[exclusion_type][1]}_excluded": f"{var_list[exclusion_type][0]}"
+                    }
+                    json.dump(data,file,indent=4)
+            for game in range(len(game_selections.all_game_details)):
+                try:
+                    if game_selections.all_game_details[game][0] == title:
+                        game_selections.all_game_details.pop(game)
+                        break
+                except Exception as e:
+                    print(f"Error {e}.")
+                    input()
+        time.sleep(1)
+
     @staticmethod
     def print_game_image(file_path,app_id,img_path,title):
         img_path = os.path.join(str(file_path), "images", f"{app_id}.jpg")
