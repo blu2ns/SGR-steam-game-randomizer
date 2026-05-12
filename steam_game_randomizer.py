@@ -38,8 +38,7 @@ class game_selections:
     
     @staticmethod        
     def show_game():
-        current_filter = settings.current_filter; current_playtime_threshold = settings.current_playtime_threshold
-        title, playtime, app_url, app_id, last_played, game_selections.randomized_game_list, game_selections.previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded,game_selections.if_go_back, game_selections.reroll_queue,game_selections.randomized_game_list, game_selections.previous_games,game_selections.file_path, current_filter, current_playtime_threshold)
+        title, playtime, app_url, app_id, last_played, game_selections.randomized_game_list, game_selections.previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded,game_selections.if_go_back, game_selections.reroll_queue,game_selections.randomized_game_list, game_selections.previous_games,game_selections.file_path, settings.current_filter, settings.current_playtime_threshold)
         game_selections.if_go_back = False; game_selections.reroll_queue = False
         if game_selections.show_images == True: game_selections.print_game_image(game_selections.file_path, app_id, game_selections.img_path, title)
         
@@ -688,33 +687,9 @@ class settings:
                     setting_name = settings.settings_list[choice][0]
                     match setting_name:
                         case 'Playtime Threshold':
-                            settings.change_playtime_threshold(choice)
+                            settings.change_playtime_threshold(choice=choice)
                         case 'Current Filter':
-                            general.clear_terminal()
-                            previous_filter = settings.current_filter
-                            print(f"{'-'*6}   Filters   {'-'*6}")
-                            for filterindx in range(len(settings.filter_list)):
-                                name = settings.filter_list[filterindx][0]
-                                description = settings.filter_list[filterindx][1]
-                                
-                                if "{}" in description:
-                                    description = description.format(settings.current_playtime_threshold)
-                                print(f"{filterindx}) {name} - {description}")
-                            filter_choice = input(f"[0-{len(settings.filter_list) - 1}] Choose Filter Type [Other] Return\n")
-
-                            try:
-                                if -1 < int(filter_choice) <= len(settings.filter_list):
-                                    settings.current_filter = str(settings.filter_list[int(filter_choice)][2])
-                                    settings.settings_list[choice][1] = settings.current_filter 
-                                    general.clear_terminal()
-                                    print(f"{previous_filter} changed to {settings.current_filter}.")
-                                    time.sleep(0.4)
-                                    print(f"Rerolling game queue based on new filter...")
-                                    time.sleep(1)
-                                elif isinstance(filter_choice, int):
-                                    print("Invalid number.")
-                            except ValueError:
-                                pass
+                            settings.change_filter_type(choice=choice)
                         case _:
                             settings.change_misc_setting(choice=choice)
 
@@ -728,6 +703,35 @@ class settings:
             game_selections.show_release_date = settings.settings_list[4][1]; game_selections.show_description = settings.settings_list[5][1]
         else: print("Settings file not found."); time.sleep(2)
     
+    @staticmethod
+    def change_filter_type(choice):
+        general.clear_terminal()
+        previous_filter = settings.current_filter
+        print(f"{'-'*6}   Filters   {'-'*6}")
+        
+        for filterindx in range(len(settings.filter_list)):
+            name = settings.filter_list[filterindx][0]
+            description = settings.filter_list[filterindx][1]
+            
+            if "{}" in description:
+                description = description.format(settings.current_playtime_threshold)
+            print(f"{filterindx}) {name} - {description}")
+        filter_choice = input(f"[0-{len(settings.filter_list) - 1}] Choose Filter Type [Other] Return\n")
+
+        try:
+            if -1 < int(filter_choice) <= len(settings.filter_list):
+                settings.current_filter = str(settings.filter_list[int(filter_choice)][2])
+                settings.settings_list[choice][1] = settings.current_filter 
+                general.clear_terminal()
+                print(f"{previous_filter} changed to {settings.current_filter}.")
+                time.sleep(0.4)
+                print(f"Rerolling game queue based on new filter...")
+                time.sleep(1)
+            elif isinstance(filter_choice, int):
+                print("Invalid number.")
+        except ValueError:
+            pass
+
     @staticmethod
     def change_misc_setting(choice):
         settings.settings_list[choice][1] = not settings.settings_list[choice][1]
