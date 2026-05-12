@@ -80,19 +80,21 @@ class game_selections:
         all_game_details = game_selections.all_game_details
         permanently_excluded = game_selections.permanently_excluded
         temporarily_excluded = game_selections.temporarily_excluded
+        directions = "\n".join([
+            "[ENTER] Reroll   [R] Reroll Queue   [V] View On Steam",
+            "[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session",
+            "[B] Go Back      [S] Settings       [E] Exit",
+            f"[RUN] Launch {title}",
+        ])
+        print(f'{"-" * 80}\n{directions}')
 
-        print(f'''{"-" * 80}
-[ENTER] Reroll   [R] Reroll Queue   [V] View On Steam 
-[C] Exclusions   [X] Exclude Perm   [Z] Exclude Session
-[B] Go Back      [S] Settings       [E] Exit
-[RUN] Launch {title}''')
         choice = input("Choice: ")
 
         match choice: 
             case 'run': #launch the game
-                game_selections.run_command(title=title,app_id=app_id,list_indx=0)
-            case 'v': #view in desktop app
                 game_selections.run_command(title=title,app_id=app_id,list_indx=1)
+            case 'v': #view in desktop app
+                game_selections.run_command(title=title,app_id=app_id,list_indx=0)
             case 'x': #exclude game permanently
                 game_selections.exclude_game(exclusion_type=0,title=title) #permanent
             case 'z': #exclude game temporarily
@@ -207,10 +209,11 @@ class game_selections:
 
     @staticmethod
     def run_command(title,app_id,list_indx):
-        #TODO: test on a pc that has steam installed
-        command_list = [[f'steam://nav/games/details/{app_id}', f"run {title}"],[f"steam://rungameid/{app_id}", f"open game page for {title}"]]
+        command_list = [[f'steam://nav/games/details/{app_id}', f"open game page for {title}"],[f"steam://rungameid/{app_id}", f"run {title}"]]
         try:
-            subprocess.Popen(['steam', str(command_list[list_indx][0])])
+            print("Launching. It may take a moment.")
+            subprocess.Popen(['steam', str(command_list[list_indx][0])],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,stdin=subprocess.DEVNULL,start_new_session=True)
+            time.sleep(1)
         except Exception as e:
             general.clear_terminal()
             print(f"Unable to {str(command_list[list_indx][1])} with error: {e}.")
@@ -304,7 +307,6 @@ class game_selections:
                 images_added += 1
             except:
                 print(f"Game image and backup game image for {title} not found.")
-        #this sometimes has an inaccurate number?
         input(f"{images_added} new images successfully cached. [Enter] Continue\n")
     
     @staticmethod
