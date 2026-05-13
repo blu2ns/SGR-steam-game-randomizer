@@ -10,6 +10,7 @@ class game_selections:
     @staticmethod
     def main():
         game_selections.file_path,game_selections.img_path = game_selections.create_storage_files()
+        
         with open(f'{game_selections.file_path}exclusion_list.json', 'r') as exclusion_file: 
             exclusion_data = json.load(exclusion_file) 
             game_selections.permanently_excluded = exclusion_data['permanently_excluded']
@@ -40,26 +41,29 @@ class game_selections:
     def show_game():
         title, playtime, app_url, app_id, last_played, game_selections.randomized_game_list, game_selections.previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded,game_selections.if_go_back, game_selections.reroll_queue,game_selections.randomized_game_list, game_selections.previous_games,game_selections.file_path, settings.current_filter, settings.current_playtime_threshold)
         game_selections.if_go_back = False; game_selections.reroll_queue = False
-        if game_selections.show_images == True: game_selections.print_game_image(game_selections.file_path, app_id, game_selections.img_path, title)
-        
-        print("-" * 80)
+
         if last_played != 0:
             last_played = datetime.datetime.fromtimestamp(last_played).strftime("%B %d, %Y at %I:%M %p")
         else:
             last_played = "Never played."
         if len(title) > 80:
-            title = title[0:78]+'..'         
-        
-        print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}\nPlaytime 2 Weeks: {playtime_2weeks_HR if playtime_2weeks_HR else '0'}")
-        
-        if game_selections.show_developers == True or game_selections.show_publishers == True or game_selections.show_genres == True or game_selections.show_release_date == True: print("-" * 80)
+            title = title[0:78]+'..'   
 
         if len(developers) > 1:
             developers = [developers[0],developers[1]]
         if len(publishers) > 1:
             publishers = [publishers[0],publishers[1]]
         if len(genres) > 5:
-            genres = [genres[0],genres[1],genres[2],genres[3],genres[4]]
+            genres = [genres[0],genres[1],genres[2],genres[3],genres[4]]      
+        if len(title) > 65:
+            title = title[0:65]+'..'
+
+        if game_selections.show_images == True: game_selections.print_game_image(game_selections.file_path, app_id, game_selections.img_path, title)
+        print("-" * 80)
+
+        print(f"{title if title else 'N/A'}\nPlaytime: {playtime if playtime else 'N/A'}\nLast Played: {last_played if last_played else 'N/A'}\nPlaytime 2 Weeks: {playtime_2weeks_HR if playtime_2weeks_HR else '0'}")
+        
+        if game_selections.show_developers == True or game_selections.show_publishers == True or game_selections.show_genres == True or game_selections.show_release_date == True: print("-" * 80)
 
         if game_selections.show_developers == True: print(f'Developed by: {', '.join(developers) if developers else 'N/A'}')
         if game_selections.show_publishers == True: print(f'Published By: {', '.join(publishers) if publishers else 'N/A'}')
@@ -69,9 +73,8 @@ class game_selections:
         if game_selections.show_description == True:
             if short_description != '':
                 print("-" * 80)
-                general.printw(short_description)
-        if len(title) > 65:
-            title = title[0:65]+'..'  
+                general.printw(short_description)  
+
         game_selections.get_input_choice(title, app_id)
 
     @staticmethod
