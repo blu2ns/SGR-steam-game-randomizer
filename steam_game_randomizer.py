@@ -644,6 +644,7 @@ class game_selections:
                 else:
                     exit()
         return randomized_game_list
+
 class settings: 
     #'default', 'norecent', 'playtime'
     current_filter = "default"
