@@ -559,7 +559,7 @@ class game_selections:
         if len(randomized_game_list) == 0 or reroll_queue == True:
             print("Rerolling queue...")
             time.sleep(0.2)
-            game_selections.shuffle_games()
+            randomized_game_list = game_selections.shuffle_games(all_game_details)
         permanently_excluded_split = permanently_excluded.split('\x1F')
         temporarily_excluded_split = temporarily_excluded.split('\x1F')
 
@@ -618,46 +618,32 @@ class game_selections:
             pass
         return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
-    def shuffle_games():
-        #TODO: MERGE THESE TO REDUCE REPEATED CODE
+    def shuffle_games(all_game_details):
         randomized_game_list = all_game_details.copy()
         random.shuffle(randomized_game_list)        
-        match settings.current_filter:
-            case 'playtime':
-                try:
-                    temp_randomized_game_list = []
-                    for game in range(len(randomized_game_list)):
-                        try:
-                            if int(randomized_game_list[game][1]) <= playtime_threshold:
-                                temp_randomized_game_list.append(randomized_game_list[game])
-                        except Exception as e:
-                            pass
-                
-                    randomized_game_list = temp_randomized_game_list.copy()
-                except Exception as e:
-                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
-                    if choice.lower() == 'y':
-                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
-                    else:
-                        exit()
-            case 'norecent':
-        
-                try:
-                    temp_randomized_game_list = []
-                    for game in range(len(randomized_game_list)):
-                        try:
-                            if int(randomized_game_list[game][5]) == 0:
-                                temp_randomized_game_list.append(randomized_game_list[game])
-                        except Exception as e:
-                            pass
-                
-                    randomized_game_list = temp_randomized_game_list.copy()
-                except Exception as e:
-                    choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
-                    if choice.lower() == 'y':
-                        game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games,file_path,"default",playtime_threshold)
-                    else:
-                        exit()
+        filter_conditions = {
+            'playtime': lambda game: int(game[1]) <= settings.current_playtime_threshold,
+            'norecent': lambda game: int(game[5]) == 0,
+        }
+
+        if settings.current_filter in filter_conditions:
+            try:
+                condition = filter_conditions[settings.current_filter]
+                temp_randomized_game_list = []
+                for game in randomized_game_list:
+                    try:
+                        if condition(game):
+                            temp_randomized_game_list.append(game)
+                    except Exception:
+                        pass
+                randomized_game_list = temp_randomized_game_list.copy()
+            except Exception as e:
+                choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
+                if choice.lower() == 'y':
+                    game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games, file_path, "default", playtime_threshold)
+                else:
+                    exit()
+        return randomized_game_list
 class settings: 
     #'default', 'norecent', 'playtime'
     current_filter = "default"
@@ -800,6 +786,8 @@ class settings:
                     game_selections.show_description = settings_data['show_description']
                     settings.current_filter = settings_data['current_filter']
                     settings.current_playtime_threshold = settings_data['current_playtime_threshold']
+                    settings.settings_list[6][1] = settings.current_filter
+                    settings.settings_list[7][1] = settings.current_playtime_threshold
             else:
                 print(f"Settings file does not exist/cannot load. Using default values.")
             return game_selections.show_images,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description
