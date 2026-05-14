@@ -643,7 +643,7 @@ class game_selections:
             except Exception as e:
                 choice = input(f"No games fit criteria of current filter with error {e}. Clear and try again? [Y] Yes [Other] Close Program")
                 if choice.lower() == 'y':
-                    game_selections.randomize_game(all_game_details, permanently_excluded, temporarily_excluded, if_go_back, reroll_queue, randomized_game_list, previous_games, file_path, "default", playtime_threshold)
+                    game_selections.randomize_game(all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, game_selections.if_go_back, game_selections.reroll_queue, randomized_game_list, game_selections.previous_games, game_selections.file_path, "default", game_selections.playtime_threshold)
                 else:
                     exit()
         return randomized_game_list
