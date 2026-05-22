@@ -144,49 +144,48 @@ class game_selections:
             if choice == 'clear p' or choice == 'clear t':
                 game_selections.clear_exclusion_list(choice)
             else:
-                match 
+                if isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
+                    try:
+                        if pool_choice == 't': 
+                            if temporarily_excluded_split[number_choice] != '':
+                                removed_title = temporarily_excluded_split.pop(number_choice)
+                                game_selections.temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
+                                general.clear_terminal()
+                                print(f"{removed_title} removed.")
+                                time.sleep(1)
+                            else: print("No game located at that position.")
+                        else: 
+                            permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
+                            if permanently_excluded_split[number_choice] != '':
+                                removed_title = permanently_excluded_split.pop(number_choice)
+                                game_selections.permanently_excluded = "\x1F".join(permanently_excluded_split)
+                                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                                    data = {
+                                        "permanently_excluded": f"{game_selections.permanently_excluded}"
+                                    }
+                                    json.dump(data,file,indent=4)
+                                general.clear_terminal()
+                                print(f"{removed_title} removed.")
+                                time.sleep(1)
+                            else: print("No game located at that position.")
+                    except Exception as e:
+                        print(f"No game located at that position. {e}")
+                        time.sleep(4)
+                    _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
+                    time.sleep(1)
 
-            # elif choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
-            #     try:
-            #         pool_choice = choice[0]
-            #         number_choice = int(choice[1:len(choice)])
-            #     except:
-            #         general.clear_terminal()
-            #         print("Invalid Input. Try again later.")
-            #         time.sleep(3)
+                elif choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
+                    try:
+                        pool_choice = choice[0]
+                        number_choice = int(choice[1:len(choice)])
+                    except:
+                        general.clear_terminal()
+                        print("Invalid Input. Try again later.")
+                        time.sleep(3)
+                else:
+                    print("Invalid Input. Try again later.")
+                    time.sleep(3)
 
-            # elif isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
-            #     try:
-            #         if pool_choice == 't': 
-            #             if temporarily_excluded_split[number_choice] != '':
-            #                 removed_title = temporarily_excluded_split.pop(number_choice)
-            #                 game_selections.temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
-            #                 general.clear_terminal()
-            #                 print(f"{removed_title} removed.")
-            #                 time.sleep(1)
-            #             else: print("No game located at that position.")
-            #         else: 
-            #             permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
-            #             if permanently_excluded_split[number_choice] != '':
-            #                 removed_title = permanently_excluded_split.pop(number_choice)
-            #                 game_selections.permanently_excluded = "\x1F".join(permanently_excluded_split)
-            #                 with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
-            #                     data = {
-            #                         "permanently_excluded": f"{game_selections.permanently_excluded}"
-            #                     }
-            #                     json.dump(data,file,indent=4)
-            #                 general.clear_terminal()
-            #                 print(f"{removed_title} removed.")
-            #                 time.sleep(1)
-            #             else: print("No game located at that position.")
-            #     except Exception as e:
-            #         print(f"No game located at that position. {e}")
-            #         time.sleep(4)
-            #     _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
-            #     time.sleep(1)
-            # else:
-            #     print("Invalid Input. Try again later.")
-            #     time.sleep(3)
         except Exception as e:
             print(f"Error: {e}")
             time.sleep(3)
