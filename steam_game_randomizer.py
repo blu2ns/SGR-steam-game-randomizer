@@ -117,7 +117,7 @@ class game_selections:
                 exit()
 
     @staticmethod
-    def view_excluded():
+    def view_excluded(): #still needs rewrite
         general.clear_terminal()
         print("-" * 80)
         permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
@@ -340,7 +340,7 @@ class game_selections:
         return permanently_excluded_split, all_game_details,game_num
     
     @staticmethod
-    def get_games(file_path,api_key,user_id):
+    def get_games(file_path,api_key,user_id): #still needs rewrite
         choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YS] Refresh Game Cache & Store Details \n[YSM] Refresh Game Cache & missing Store Details\n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
         
         if choice.lower() == 'y' or choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug' or choice.lower() == 'ydebug':
