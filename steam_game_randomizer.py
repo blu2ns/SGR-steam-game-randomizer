@@ -138,12 +138,11 @@ class game_selections:
         choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
         if choice == '': return
         try: 
-            pool_choice = choice[0]
-            number_choice = int(choice[1:len(choice)])
-
-            if choice == 'clear p' or choice == 'clear t':
+            if choice.lower() == 'clear p' or choice.lower() == 'clear t':
                 game_selections.clear_exclusion_list(choice)
             else:
+                pool_choice = choice[0]
+                number_choice = int(choice[1:len(choice)])
                 if isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
                     try:
                         if pool_choice == 't': 
