@@ -342,7 +342,12 @@ class game_selections:
     @staticmethod
     def get_games(file_path,api_key,user_id): #still needs rewrite
         choice = input(f"{"-" * 80}\nWelcome to the Steam Game Randomizer.\n[Y] Refresh game cache. [YS] Refresh Game Cache & Store Details \n[YSM] Refresh Game Cache & missing Store Details\n[C] Change stored API Key and User ID [Other] Continue without refresh.\n")
-        
+
+        if choice.lower() == 'c':
+            general.clear_terminal()
+            game_selections.create_keyids(file_path)
+            game_selections.get_games(file_path,api_key,user_id)
+
         if choice.lower() == 'y' or choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug' or choice.lower() == 'ydebug':
             try:
                 general.clear_terminal()
@@ -460,11 +465,6 @@ class game_selections:
                 print("Make sure stored API Key and User ID is correct and try again.")
                 input("[Enter] Continue")
         
-        if choice.lower() == 'c':
-            general.clear_terminal()
-            game_selections.create_keyids(file_path)
-            game_selections.get_games(file_path,api_key,user_id)
-    
     @staticmethod
     def create_storage_files():
         
