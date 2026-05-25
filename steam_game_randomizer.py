@@ -13,8 +13,8 @@ class game_selections:
         
         with open(f'{game_selections.file_path}exclusion_list.json', 'r') as exclusion_file: 
             exclusion_data = json.load(exclusion_file) 
-            game_selections.permanently_excluded = exclusion_data['permanently_excluded']
-            game_selections.temporarily_excluded = "" 
+            game_selections.permanently_excluded = exclusion_data.get('permanently_excluded', [])
+            game_selections.temporarily_excluded = [] 
         try:
             game_selections.show_images, game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description = settings.load_settings(game_selections.file_path,game_selections.show_images,game_selections.show_developers,game_selections.show_publishers,game_selections.show_genres,game_selections.show_release_date,game_selections.show_description)    
         except Exception as e:
@@ -120,12 +120,10 @@ class game_selections:
     def view_excluded(): #still needs rewrite
         general.clear_terminal()
         print("-" * 80)
-        permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
-        temporarily_excluded_split = game_selections.temporarily_excluded.split('\x1F')
 
-        var_list = [[permanently_excluded_split,"Permanently"],[temporarily_excluded_split,"Temporarily"]]
+        var_list = [[game_selections.permanently_excluded,"Permanently"],[game_selections.temporarily_excluded,"Temporarily"]]
         for i in range(len(var_list)):
-            if var_list[i][0][0] != '':
+            if var_list[i][0]:
                 print(f"{var_list[i][1]} excluded games:")
                         
                 for n in range(len(var_list[i][0])):
@@ -146,18 +144,15 @@ class game_selections:
                 if isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
                     try:
                         if pool_choice == 't': 
-                            if temporarily_excluded_split[number_choice] != '':
-                                removed_title = temporarily_excluded_split.pop(number_choice)
-                                game_selections.temporarily_excluded = '\x1F'.join(temporarily_excluded_split)
+                            if game_selections.temporarily_excluded[number_choice]:
+                                removed_title = game_selections.temporarily_excluded.pop(number_choice)
                                 general.clear_terminal()
                                 print(f"{removed_title} removed.")
                                 time.sleep(1)
                             else: print("No game located at that position.")
                         else: 
-                            permanently_excluded_split = game_selections.permanently_excluded.split('\x1F')
-                            if permanently_excluded_split[number_choice] != '':
-                                removed_title = permanently_excluded_split.pop(number_choice)
-                                game_selections.permanently_excluded = "\x1F".join(permanently_excluded_split)
+                            if game_selections.permanently_excluded[number_choice]:
+                                removed_title = game_selections.permanently_excluded.pop(number_choice)
                                 with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
                                     data = {
                                         "permanently_excluded": f"{game_selections.permanently_excluded}"
@@ -192,7 +187,7 @@ class game_selections:
     @staticmethod
     def clear_exclusion_list(choice):
         if choice[6] == 'p':
-            game_selections.permanently_excluded = ''
+            game_selections.permanently_excluded = []
             with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
                 data = {
                     "permanently_excluded": f"{game_selections.permanently_excluded}"
@@ -200,7 +195,7 @@ class game_selections:
                 json.dump(data,file,indent=4)
 
         elif choice[6] == 't':
-            game_selections.temporarily_excluded = ''
+            game_selections.temporarily_excluded = []
 
         game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, game_selections.file_path, settings.current_filter, settings.current_playtime_threshold)[5:7]
         print("Rerolled game queue based on new exclusion list.")
@@ -223,20 +218,17 @@ class game_selections:
     def exclude_game(exclusion_type,title):
         general.clear_terminal()
         var_list = [[game_selections.permanently_excluded,"permanently","permanently_excluded"],[game_selections.temporarily_excluded,"temporarily","temporarily_excluded"]]
-        if title in var_list[exclusion_type][0].split('\x1F'):
+        if title in var_list[exclusion_type][0]:
             print(f"Game is already in selected exclusion list.")
         else:
             print(f"{title} excluded {var_list[exclusion_type][1]}.")
 
-            if var_list[exclusion_type][0] != "":
-                var_list[exclusion_type][0] = str(var_list[exclusion_type][0]) + "\x1F" + str(title)
-            else:
-                var_list[exclusion_type][0] = title
+            var_list[exclusion_type][0].append(title)
             setattr(game_selections, var_list[exclusion_type][2], var_list[exclusion_type][0])
             if exclusion_type == 0:
                 with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
                     data = {
-                        f"{var_list[exclusion_type][1]}_excluded": f"{var_list[exclusion_type][0]}"
+                        "permanently_excluded": var_list[exclusion_type][0]
                     }
                     json.dump(data,file,indent=4)
             for game in range(len(game_selections.all_game_details)):
@@ -335,9 +327,8 @@ class game_selections:
             except:
                 break
 
-        permanently_excluded_split = permanently_excluded.split('\x1F')
-        all_game_details = [game for game in all_game_details if game[0] not in permanently_excluded_split]
-        return permanently_excluded_split, all_game_details,game_num
+        all_game_details = [game for game in all_game_details if game[0] not in game_selections.permanently_excluded]
+        return game_selections.permanently_excluded, all_game_details,game_num
     
     @staticmethod
     def get_games(file_path,api_key,user_id): #still needs rewrite
@@ -379,6 +370,11 @@ class game_selections:
                     print(json.dumps(response.json(), indent=4))
                     input("[Enter] Continue")
                 
+                if 'game_count' not in game_data.get('response', {}):
+                    print("Account ID invalid. User ID might be wrong or library is set to private.")
+                    print('[Enter] Continue')
+                    return
+
                 game_num = 0
                 game_data = response.json()
                 if choice.lower() == 'ydebug' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
@@ -387,76 +383,10 @@ class game_selections:
                 with open(f'{file_path}last_game_data.json', 'w') as game_file:
                     json.dump(game_data, game_file, indent=4)
                     game_num = game_data['response']['game_count']
-                appid = 0
-                store_details = {}
+
                 if choice.lower() == 'ys' or choice.lower() == 'ysm' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
-                    if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
-                        existing_game_list = []
+                    game_selections.get_storepg_data(choice,game_data) 
 
-                        with open(f'{file_path}game_store_data.json', 'r') as game_file:
-                            data = json.load(game_file)        
-                        for game_id, temp_game_data in data.items():
-                            existing_game_list.append(game_id)
-                            print(f"Game store page data already exists for {temp_game_data['name']}.")
-                            time.sleep(0.001)
-                            general.clear_terminal()
-
-                        game_data['response']['games'] = [
-                            game for game in game_data['response']['games']
-                            if str(game['appid']) not in existing_game_list
-                        ]
-                        game_num = len(game_data['response']['games'])
-                    game_details_fetched = 0
-                    for game in range(game_num):
-                        try:
-                            app_id = game_data['response']['games'][game]['appid']
-                            game_name = game_data['response']['games'][game]['name']
-                            print(f"Getting game store page data for {game_name}.")
-                            url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-                            response = requests.get(url)
-                            data = response.json()
-                            if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
-                                print(json.dumps(data, indent=4))
-                            if data[str(app_id)]['success'] == False:
-                                print(f"Unable to retreive game data for {game_name}, skipping.")
-                                continue
-                            price_overview = data[str(app_id)]['data'].get('price_overview', {})
-                            relevant_data = {
-                                'success':    data[str(app_id)]['success'],
-                                'short_description': data[str(app_id)]['data'].get('short_description', 'N/A'),
-                                'developers': data[str(app_id)]['data'].get('developers', 'N/A'),
-                                'publishers': data[str(app_id)]['data'].get('publishers', 'N/A'),
-                                'platforms':  data[str(app_id)]['data'].get('platforms', 'N/A'),
-                                'genres':     data[str(app_id)]['data'].get('genres', 'N/A'),
-                                'release_date': data[str(app_id)]['data'].get('release_date', {}).get('date', 'N/A'),
-                                'name': data[str(app_id)]['data'].get('name', 'N/A'),
-                            }
-
-                            general.clear_terminal()
-                            store_details[app_id] = relevant_data
-                            game_details_fetched += 1
-                        except Exception as e:
-                            print(f"Failed with error {e}. Skipping. If this happens a lot, you might have gotten rate limited, so try again in a few minutes.")
-                            time.sleep(3)
-                    print(f"Retrieved new data for {game_details_fetched} {'games' if game_details_fetched != 1 else 'game'}.")
-                    time.sleep(1)
-                    if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
-                        input("[Enter] Continue")
-                    try:
-                        try:
-                            with open(f'{file_path}game_store_data.json', 'r') as game_file:
-                                existing_game_data = json.load(game_file)
-                        except (json.JSONDecodeError, FileNotFoundError):
-                            existing_game_data = {}
-
-                        existing_game_data.update(store_details)
-
-                        with open(f'{file_path}game_store_data.json', 'w') as game_file:
-                            json.dump(existing_game_data, game_file, indent=4)
-                        print("Game Store data successfully stored.")
-                    except Exception as e:
-                        print(f"Error occurred when storing store page data: {e}")
-                        input()
                 print(f"Game list successfully refreshed and cached.")
                 time.sleep(0.5)
 
@@ -464,7 +394,79 @@ class game_selections:
                 print(f"Error: {e}")
                 print("Make sure stored API Key and User ID is correct and try again.")
                 input("[Enter] Continue")
-        
+
+    @staticmethod
+    def get_storepg_data(choice,game_data):
+        appid = 0
+        store_details = {}
+        if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
+            existing_game_list = []
+
+            with open(f'{game_selections.file_path}game_store_data.json', 'r') as game_file:
+                data = json.load(game_file)        
+            for game_id, temp_game_data in data.items():
+                existing_game_list.append(game_id)
+                print(f"Game store page data already exists for {temp_game_data['name']}.")
+                time.sleep(0.001)
+                general.clear_terminal()
+
+            game_data['response']['games'] = [
+                game for game in game_data['response']['games']
+                if str(game['appid']) not in existing_game_list
+            ]
+            game_num = len(game_data['response']['games'])
+        game_details_fetched = 0
+        for game in range(game_num):
+            try:
+                app_id = game_data['response']['games'][game]['appid']
+                game_name = game_data['response']['games'][game]['name']
+                print(f"Getting game store page data for {game_name}.")
+                url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+                response = requests.get(url)
+                data = response.json()
+                if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+                    print(json.dumps(data, indent=4))
+                if data[str(app_id)]['success'] == False:
+                    print(f"Unable to retreive game data for {game_name}, skipping.")
+                    continue
+                price_overview = data[str(app_id)]['data'].get('price_overview', {})
+                relevant_data = {
+                    'success':    data[str(app_id)]['success'],
+                    'short_description': data[str(app_id)]['data'].get('short_description', 'N/A'),
+                    'developers': data[str(app_id)]['data'].get('developers', 'N/A'),
+                    'publishers': data[str(app_id)]['data'].get('publishers', 'N/A'),
+                    'platforms':  data[str(app_id)]['data'].get('platforms', 'N/A'),
+                    'genres':     data[str(app_id)]['data'].get('genres', 'N/A'),
+                    'release_date': data[str(app_id)]['data'].get('release_date', {}).get('date', 'N/A'),
+                    'name': data[str(app_id)]['data'].get('name', 'N/A'),
+                }
+
+                general.clear_terminal()
+                store_details[app_id] = relevant_data
+                game_details_fetched += 1
+            except Exception as e:
+                print(f"Failed with error {e}. Skipping. If this happens a lot, you might have gotten rate limited, so try again in a few minutes.")
+                time.sleep(3)
+        print(f"Retrieved new data for {game_details_fetched} {'games' if game_details_fetched != 1 else 'game'}.")
+        time.sleep(1)
+        if choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
+            input("[Enter] Continue")
+        try:
+            try:
+                with open(f'{game_selections.file_path}game_store_data.json', 'r') as game_file:
+                    existing_game_data = json.load(game_file)
+            except (json.JSONDecodeError, FileNotFoundError):
+                existing_game_data = {}
+
+            existing_game_data.update(store_details)
+
+            with open(f'{game_selections.file_path}game_store_data.json', 'w') as game_file:
+                json.dump(existing_game_data, game_file, indent=4)
+            print("Game Store data successfully stored.")
+        except Exception as e:
+            print(f"Error occurred when storing store page data: {e}")
+            input()  
+
     @staticmethod
     def create_storage_files():
         
@@ -489,7 +491,7 @@ class game_selections:
 
             if choice.lower() == 'y':
                 file_list = [
-                    ("Exclusion List",      "exclusion_list.json",  {"permanently_excluded": ""}),
+                    ("Exclusion List",      "exclusion_list.json",  {"permanently_excluded": []}),
                     ("Game Data",           "last_game_data.json",  {}),
                     ("Game Store Data",     "game_store_data.json", {}),
                     ("Settings",            "settings.json",        {
@@ -560,8 +562,6 @@ class game_selections:
             print("Rerolling queue...")
             time.sleep(0.2)
             randomized_game_list = game_selections.shuffle_games(all_game_details)
-        permanently_excluded_split = permanently_excluded.split('\x1F')
-        temporarily_excluded_split = temporarily_excluded.split('\x1F')
 
         game_choice = []
         general.clear_terminal()
@@ -577,7 +577,7 @@ class game_selections:
                     permanently_excluded = ''
                     temporarily_excluded = ''
                     with open(f'{file_path}exclusion_list.json','w') as file:
-                        json.dump({"permanently_excluded": ""}, file, indent=4)
+                        json.dump({"permanently_excluded": []}, file, indent=4)
 
                     _, all_game_details, _ = game_selections.parse_game_data(file_path, permanently_excluded)
                     random.shuffle(all_game_details)
@@ -618,6 +618,7 @@ class game_selections:
             pass
         return title, playtime, app_url, app_id, last_played, randomized_game_list, previous_games, developers, publishers, platforms, genres, release_date, short_description, playtime_2weeks, playtime_2weeks_HR
 
+    @staticmethod
     def shuffle_games(all_game_details):
         randomized_game_list = all_game_details.copy()
         random.shuffle(randomized_game_list)        
