@@ -99,11 +99,11 @@ class game_selections:
             case 'v': #view in desktop app
                 game_selections.run_command(title=title,app_id=app_id,list_indx=0)
             case 'x': #exclude game permanently
-                exclusions.exclude_game(exclusion_type=0,title=title) #permanent
+                exclusions.add_exclusion(exclusion_type=0,title=title) #permanent
             case 'z': #exclude game temporarily
-                exclusions.exclude_game(exclusion_type=1,title=title) #temp
+                exclusions.add_exclusion(exclusion_type=1,title=title) #temp
             case 'c': #see list of excluded games
-                game_selections.view_excluded()
+                exclusions.view_excluded()
             case 'b': #go back by one game
                 game_selections.if_go_back = True
             case 'r': #reroll the roll queue
@@ -257,16 +257,17 @@ class game_selections:
                     print(json.dumps(response.json(), indent=4))
                     input("[Enter] Continue")
                 
-                if 'game_count' not in game_data.get('response', {}):
-                    print("Account ID invalid. User ID might be wrong or library is set to private.")
-                    print('[Enter] Continue')
-                    return
-
                 game_num = 0
                 game_data = response.json()
                 if choice.lower() == 'ydebug' or choice.lower() == 'ysdebug' or choice.lower() == 'ysmdebug':
                     print(game_data)
                     input("[Enter] Continue")
+
+                if 'game_count' not in game_data.get('response', {}):
+                    print("Account ID invalid. User ID might be wrong or library is set to private.")
+                    print('[Enter] Continue')
+                    return
+
                 with open(f'{file_path}last_game_data.json', 'w') as game_file:
                     json.dump(game_data, game_file, indent=4)
                     game_num = game_data['response']['game_count']
@@ -286,6 +287,7 @@ class game_selections:
     def get_storepg_data(choice,game_data):
         appid = 0
         store_details = {}
+        game_num = len(game_data['response']['games'])
         if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
             existing_game_list = []
 
@@ -301,7 +303,6 @@ class game_selections:
                 game for game in game_data['response']['games']
                 if str(game['appid']) not in existing_game_list
             ]
-            game_num = len(game_data['response']['games'])
         game_details_fetched = 0
         for game in range(game_num):
             try:
@@ -461,8 +462,8 @@ class game_selections:
                 print('-' *80)
                 choice = input(f"No games found in list. Either you're very picky or you own no steam games.\n[Y] Clear exclusion preferences. [Other] Close program\n {e}")
                 if choice.lower() == 'y':
-                    permanently_excluded = ''
-                    temporarily_excluded = ''
+                    permanently_excluded = []
+                    temporarily_excluded = []
                     with open(f'{file_path}exclusion_list.json','w') as file:
                         json.dump({"permanently_excluded": []}, file, indent=4)
 
@@ -555,9 +556,9 @@ class exclusions:
         if choice == '': return
         try: 
             if choice.lower() == 'clear p' or choice.lower() == 'clear t':
-                game_selections.clear_exclusion_list(choice)
+                exclusions.clear_exclusion_list(choice)
             else:
-                game_selections.exclude_game(choice)
+                exclusions.exclude_game(choice)
 
         except Exception as e:
             print(f"Error: {e}")
@@ -603,7 +604,7 @@ class exclusions:
             game_selections.permanently_excluded = []
             with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
                 data = {
-                    "permanently_excluded": f"{game_selections.permanently_excluded}"
+                    "permanently_excluded": game_selections.permanently_excluded
                 }
                 json.dump(data,file,indent=4)
 
