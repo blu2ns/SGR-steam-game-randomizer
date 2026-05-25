@@ -99,9 +99,9 @@ class game_selections:
             case 'v': #view in desktop app
                 game_selections.run_command(title=title,app_id=app_id,list_indx=0)
             case 'x': #exclude game permanently
-                game_selections.exclude_game(exclusion_type=0,title=title) #permanent
+                exclusions.exclude_game(exclusion_type=0,title=title) #permanent
             case 'z': #exclude game temporarily
-                game_selections.exclude_game(exclusion_type=1,title=title) #temp
+                exclusions.exclude_game(exclusion_type=1,title=title) #temp
             case 'c': #see list of excluded games
                 game_selections.view_excluded()
             case 'b': #go back by one game
@@ -117,92 +117,6 @@ class game_selections:
                 exit()
 
     @staticmethod
-    def view_excluded(): #still needs rewrite
-        general.clear_terminal()
-        print("-" * 80)
-
-        var_list = [[game_selections.permanently_excluded,"Permanently"],[game_selections.temporarily_excluded,"Temporarily"]]
-        for i in range(len(var_list)):
-            if var_list[i][0]:
-                print(f"{var_list[i][1]} excluded games:")
-                        
-                for n in range(len(var_list[i][0])):
-                    print(f"{n}) {var_list[i][0][n]}")
-                print('')
-            else:
-                print(f"{var_list[i][1]} excluded list is empty.")
-                print('')
-        
-        choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
-        if choice == '': return
-        try: 
-            if choice.lower() == 'clear p' or choice.lower() == 'clear t':
-                game_selections.clear_exclusion_list(choice)
-            else:
-                pool_choice = choice[0]
-                number_choice = int(choice[1:len(choice)])
-                if isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
-                    try:
-                        if pool_choice == 't': 
-                            if game_selections.temporarily_excluded[number_choice]:
-                                removed_title = game_selections.temporarily_excluded.pop(number_choice)
-                                general.clear_terminal()
-                                print(f"{removed_title} removed.")
-                                time.sleep(1)
-                            else: print("No game located at that position.")
-                        else: 
-                            if game_selections.permanently_excluded[number_choice]:
-                                removed_title = game_selections.permanently_excluded.pop(number_choice)
-                                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
-                                    data = {
-                                        "permanently_excluded": f"{game_selections.permanently_excluded}"
-                                    }
-                                    json.dump(data,file,indent=4)
-                                general.clear_terminal()
-                                print(f"{removed_title} removed.")
-                                time.sleep(1)
-                            else: print("No game located at that position.")
-                    except Exception as e:
-                        print(f"No game located at that position. {e}")
-                        time.sleep(4)
-                    _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
-                    time.sleep(1)
-
-                elif choice[0:7].lower() != 'clear p' and choice[0:7].lower() != 'clear t':
-                    try:
-                        pool_choice = choice[0]
-                        number_choice = int(choice[1:len(choice)])
-                    except:
-                        general.clear_terminal()
-                        print("Invalid Input. Try again later.")
-                        time.sleep(3)
-                else:
-                    print("Invalid Input. Try again later.")
-                    time.sleep(3)
-
-        except Exception as e:
-            print(f"Error: {e}")
-            time.sleep(3)
-
-    @staticmethod
-    def clear_exclusion_list(choice):
-        if choice[6] == 'p':
-            game_selections.permanently_excluded = []
-            with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
-                data = {
-                    "permanently_excluded": f"{game_selections.permanently_excluded}"
-                }
-                json.dump(data,file,indent=4)
-
-        elif choice[6] == 't':
-            game_selections.temporarily_excluded = []
-
-        game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, game_selections.file_path, settings.current_filter, settings.current_playtime_threshold)[5:7]
-        print("Rerolled game queue based on new exclusion list.")
-        time.sleep(1.5)
-        _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
-
-    @staticmethod
     def run_command(title,app_id,list_indx):
         command_list = [[f'steam://nav/games/details/{app_id}', f"open game page for {title}"],[f"steam://rungameid/{app_id}", f"run {title}"]]
         try:
@@ -213,33 +127,6 @@ class game_selections:
             general.clear_terminal()
             print(f"Unable to {str(command_list[list_indx][1])} with error: {e}.")
             input("[Enter] Continue\n")
-
-    @staticmethod
-    def exclude_game(exclusion_type,title):
-        general.clear_terminal()
-        var_list = [[game_selections.permanently_excluded,"permanently","permanently_excluded"],[game_selections.temporarily_excluded,"temporarily","temporarily_excluded"]]
-        if title in var_list[exclusion_type][0]:
-            print(f"Game is already in selected exclusion list.")
-        else:
-            print(f"{title} excluded {var_list[exclusion_type][1]}.")
-
-            var_list[exclusion_type][0].append(title)
-            setattr(game_selections, var_list[exclusion_type][2], var_list[exclusion_type][0])
-            if exclusion_type == 0:
-                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
-                    data = {
-                        "permanently_excluded": var_list[exclusion_type][0]
-                    }
-                    json.dump(data,file,indent=4)
-            for game in range(len(game_selections.all_game_details)):
-                try:
-                    if game_selections.all_game_details[game][0] == title:
-                        game_selections.all_game_details.pop(game)
-                        break
-                except Exception as e:
-                    print(f"Error {e}.")
-                    input()
-        time.sleep(1)
 
     @staticmethod
     def print_game_image(file_path,app_id,img_path,title):
@@ -645,6 +532,115 @@ class game_selections:
                 else:
                     exit()
         return randomized_game_list
+
+class exclusions:
+    @staticmethod
+    def view_excluded(): 
+        general.clear_terminal()
+        print("-" * 80)
+
+        var_list = [[game_selections.permanently_excluded,"Permanently"],[game_selections.temporarily_excluded,"Temporarily"]]
+        for i in range(len(var_list)):
+            if var_list[i][0]:
+                print(f"{var_list[i][1]} excluded games:")
+                        
+                for n in range(len(var_list[i][0])):
+                    print(f"{n}) {var_list[i][0][n]}")
+                print('')
+            else:
+                print(f"{var_list[i][1]} excluded list is empty.")
+                print('')
+        
+        choice = str(input("Input the first letter of the exclusion pool you would like to remove from,\nfollowed by the number for game you would like to remove. Eg. (p2,t4), etc.\n[Clear P] Clear Permanently Excluded list.\n[Clear T] Clear Temporarily Excluded list. [Enter] Continue.\n"))
+        if choice == '': return
+        try: 
+            if choice.lower() == 'clear p' or choice.lower() == 'clear t':
+                game_selections.clear_exclusion_list(choice)
+            else:
+                game_selections.exclude_game(choice)
+
+        except Exception as e:
+            print(f"Error: {e}")
+            time.sleep(3)
+
+    @staticmethod
+    def exclude_game(choice):
+        pool_choice = choice[0]
+        number_choice = int(choice[1:len(choice)])
+        if isinstance(number_choice, int) and (pool_choice == 'p' or pool_choice == 't'):
+            try:
+                if pool_choice == 't': 
+                    if game_selections.temporarily_excluded[number_choice]:
+                        removed_title = game_selections.temporarily_excluded.pop(number_choice)
+                        general.clear_terminal()
+                        print(f"{removed_title} removed.")
+                        time.sleep(1)
+                    else: print("No game located at that position.")
+                else: 
+                    if game_selections.permanently_excluded[number_choice]:
+                        removed_title = game_selections.permanently_excluded.pop(number_choice)
+                        with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                            data = {
+                                "permanently_excluded": game_selections.permanently_excluded
+                            }
+                            json.dump(data,file,indent=4)
+                        general.clear_terminal()
+                        print(f"{removed_title} removed.")
+                        time.sleep(1)
+                    else: print("No game located at that position.")
+            except Exception as e:
+                print(f"No game located at that position. {e}")
+                time.sleep(4)
+            _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
+            time.sleep(1)
+        else:
+            print("Invalid Input. Try again later.")
+            time.sleep(3)
+
+    @staticmethod
+    def clear_exclusion_list(choice):
+        if choice[6] == 'p':
+            game_selections.permanently_excluded = []
+            with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                data = {
+                    "permanently_excluded": f"{game_selections.permanently_excluded}"
+                }
+                json.dump(data,file,indent=4)
+
+        elif choice[6] == 't':
+            game_selections.temporarily_excluded = []
+
+        game_selections.randomized_game_list, game_selections.previous_games = game_selections.randomize_game(game_selections.all_game_details, game_selections.permanently_excluded, game_selections.temporarily_excluded, False, True, game_selections.randomized_game_list, game_selections.previous_games, game_selections.file_path, settings.current_filter, settings.current_playtime_threshold)[5:7]
+        print("Rerolled game queue based on new exclusion list.")
+        time.sleep(1.5)
+        _, game_selections.all_game_details, _ = game_selections.parse_game_data(game_selections.file_path, game_selections.permanently_excluded)
+
+    @staticmethod
+    def add_exclusion(exclusion_type,title):
+        general.clear_terminal()
+        var_list = [[game_selections.permanently_excluded,"permanently","permanently_excluded"],[game_selections.temporarily_excluded,"temporarily","temporarily_excluded"]]
+        if title in var_list[exclusion_type][0]:
+            print(f"Game is already in selected exclusion list.")
+        else:
+            print(f"{title} excluded {var_list[exclusion_type][1]}.")
+
+            var_list[exclusion_type][0].append(title)
+            setattr(game_selections, var_list[exclusion_type][2], var_list[exclusion_type][0])
+            if exclusion_type == 0:
+                with open(f'{game_selections.file_path}exclusion_list.json','w') as file:
+                    data = {
+                        "permanently_excluded": var_list[exclusion_type][0]
+                    }
+                    json.dump(data,file,indent=4)
+            for game in range(len(game_selections.all_game_details)):
+                try:
+                    if game_selections.all_game_details[game][0] == title:
+                        game_selections.all_game_details.pop(game)
+                        break
+                except Exception as e:
+                    print(f"Error {e}.")
+                    input()
+        time.sleep(1)
 
 class settings: 
     #'default', 'norecent', 'playtime'
