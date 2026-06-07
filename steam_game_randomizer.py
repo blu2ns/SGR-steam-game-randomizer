@@ -286,7 +286,7 @@ class game_selections:
     def get_storepg_data(choice,game_data):
         appid = 0
         store_details = {}
-        game_num = len(game_data['response']['games'])
+        
         if choice.lower() == 'ysm' or choice.lower() == 'ysmdebug':
             existing_game_list = []
 
@@ -303,6 +303,7 @@ class game_selections:
                 if str(game['appid']) not in existing_game_list
             ]
         game_details_fetched = 0
+        game_num = len(game_data['response']['games'])
         for game in range(game_num):
             try:
                 app_id = game_data['response']['games'][game]['appid']
@@ -353,8 +354,8 @@ class game_selections:
         except Exception as e:
             print(f"Error occurred when storing store page data: {e}")
             input()  
-
-
+    @staticmethod
+    def create_keyids(file_path):
         general.clear_terminal()
         api_key = input(f"Input API key. This can be changed later by running\nthe program again and following the prompt.\nA guide to getting this can be found on the github page or in the README.\n")
         general.clear_terminal()
@@ -468,6 +469,69 @@ class game_selections:
                 else:
                     exit()
         return randomized_game_list
+
+    @staticmethod
+    def create_storage_files():
+        
+        file_path = Path(__file__).resolve().parent
+        file_path = os.path.join(str(file_path), "storage", "")
+
+        try:
+            os.mkdir(file_path)
+        except FileExistsError:
+            pass
+
+        img_path = os.path.join(str(file_path), "images", "")
+
+        try:
+            os.mkdir(img_path)
+        except FileExistsError:
+            pass
+        
+        if os.path.exists(f'{file_path}exclusion_list.json') == False or os.path.exists(f'{file_path}keyids.json') == False or os.path.exists(f'{file_path}last_game_data.json') == False or os.path.exists(f'{file_path}settings.json') == False or os.path.exists(f'{file_path}game_store_data.json') == False:
+            
+            choice = input("One or more storage files not found. [Y] Create Files [Other] Close Program\n")
+
+            if choice.lower() == 'y':
+                file_list = [
+                    ("Exclusion List",      "exclusion_list.json",  {"permanently_excluded": []}),
+                    ("Game Data",           "last_game_data.json",  {}),
+                    ("Game Store Data",     "game_store_data.json", {}),
+                    ("Settings",            "settings.json",        {
+                        "show_images": True,
+                        "show_developers": True,
+                        "show_publishers": True,
+                        "show_genres": True,
+                        "show_release_date": True,
+                        "show_description": True,
+                        "current_filter": "default",
+                        "current_playtime_threshold": 120
+                    }),
+                ]
+
+                for game_indx in range(len(file_list)):
+                    storage_file_path = f'{file_path}{file_list[game_indx][1]}'
+                    choice = ''
+                    general.clear_terminal()
+                    if os.path.exists(storage_file_path) == True: 
+                        choice = input(f"{file_list[game_indx][0]} storage file found. Recreate? [Y] Yes [Other] No\n")
+                    if choice.lower() == 'y' or os.path.exists(storage_file_path) == False:
+                        with open(storage_file_path, 'w') as file: 
+                            json.dump(file_list[game_indx][2],file,indent=4)
+                        general.clear_terminal()
+                        print(f"Created {file_list[game_indx][0]} storage file at {storage_file_path}.")
+                        time.sleep(2.5)
+                        
+                choice = ''
+                if os.path.exists(f'{file_path}keyids.json') == True:
+                    choice = input("Credentials file found. Recreate? [Y] Yes [Other] No\n")
+                if choice.lower() == 'y' or os.path.exists(f'{file_path}keyids.json') == False:
+                    game_selections.create_keyids(file_path)
+                general.clear_terminal()
+            else:
+                exit()
+        
+        return file_path,img_path
 
 class exclusions:
     @staticmethod
