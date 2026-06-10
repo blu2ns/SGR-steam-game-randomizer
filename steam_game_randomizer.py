@@ -784,6 +784,12 @@ class settings:
                     game_selections.show_description = settings_data['show_description']
                     settings.current_filter = settings_data['current_filter']
                     settings.current_playtime_threshold = settings_data['current_playtime_threshold']
+                    settings.settings_list[0][1] = settings_data['show_images']
+                    settings.settings_list[1][1] = settings_data['show_developers']
+                    settings.settings_list[2][1] = settings_data['show_publishers']
+                    settings.settings_list[3][1] = settings_data['show_genres']
+                    settings.settings_list[4][1] = settings_data['show_release_date']
+                    settings.settings_list[5][1] = settings_data['show_description']
                     settings.settings_list[6][1] = settings.current_filter
                     settings.settings_list[7][1] = settings.current_playtime_threshold
             else:
